@@ -811,12 +811,14 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
                         <a href="{{ path('app_activity_logs_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_activity_logs' ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             Activity Logs
                         </a>
                     </li>
+                    {% endif %}
 
                     <li class="nav-item">
                         <a href="{{ path('app_logout') }}" class="nav-link">
