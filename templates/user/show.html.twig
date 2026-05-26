@@ -1,0 +1,379 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.username }} - User Details{% endblock %}
+
+{% block body %}
+    <div class="show-user-container">
+        <div class="header-section">
+            <h1 class="page-title">
+                <i class="fas fa-user-circle"></i> User Details
+            </h1>
+            <p class="page-subtitle">View detailed information about {{ user.username }}</p>
+        </div>
+
+        <div class="card details-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user"></i> {{ user.username }}
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="details-container">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-id-badge"></i> User ID
+                            </div>
+                            <div class="detail-value">{{ user.id }}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-user"></i> Username
+                            </div>
+                            <div class="detail-value username-value">{{ user.username }}</div>
+                        </div>
+                        
+                        <!-- Roles as a detail item with same styling -->
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-user-shield"></i> Roles
+                            </div>
+                            <div class="roles-box">
+                                {% for role in user.getRoles() %}
+                                    <span class="role-badge role-{{ role|replace({'ROLE_': ''})|lower }}">
+                                        {{ role|replace({'ROLE_': ''})|replace({'_': ' '})|title }}
+                                    </span>
+                                {% else %}
+                                    <span class="no-roles">No roles assigned</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button-group">
+                <a href="{{ path('app_user_index') }}" class="btn btn-secondary back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Users List
+                </a>
+
+                <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-primary edit-btn">
+                    <i class="fas fa-edit"></i> Edit User
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .show-user-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .page-title i {
+            color: #6d28d9; /* Dark purple */
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .details-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            color: white;
+            border-bottom: none;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.6rem;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        /* Details Grid - all items same width */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .detail-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #7c3aed; /* Dark purple accent */
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #5b21b6; /* Dark purple */
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-label i {
+            font-size: 1.1rem;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .username-value {
+            font-weight: 600;
+            color: #5b21b6;
+        }
+
+        /* Roles box - now inside detail-item for same styling */
+        .roles-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .role-admin {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .role-user {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .role-editor {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .role-manager {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .role-super_admin {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .no-roles {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Back button */
+        .back-btn {
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            background: #6c757d;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 48px;
+            line-height: 20px;
+            font-size: 1rem;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Edit button */
+        .edit-btn {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); /* Darker purple on hover */
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .show-user-container {
+                padding: 20px 15px;
+            }
+            
+            .card-body {
+                padding: 25px;
+            }
+            
+            .card-header {
+                padding: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .detail-item {
+                padding: 20px;
+            }
+            
+            .roles-box {
+                gap: 8px;
+            }
+            
+            .role-badge {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .action-buttons {
+                margin-top: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .back-btn,
+            .edit-btn {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .show-user-container {
+                padding: 15px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            .detail-item {
+                padding: 15px;
+            }
+            
+            .roles-box {
+                justify-content: center;
+            }
+            
+            .action-buttons {
+                margin-top: 15px;
+            }
+        }
+    </style>
+{% endblock %}

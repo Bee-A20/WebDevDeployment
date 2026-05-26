@@ -1,0 +1,593 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Order{% endblock %}
+
+{% block page_title %}Edit Order{% endblock %}
+
+{% block body %}
+    <div class="edit-order-container">
+        <div class="header-section">
+            <h1 class="page-title">
+                <i class="fas fa-edit"></i> Edit Order
+            </h1>
+            <p class="page-subtitle">Modify order information</p>
+        </div>
+
+        <div class="card edit-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-shopping-cart"></i> Order Details
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="order-form-container">
+                    {{ include('orders/_form.html.twig', {'button_label': 'Update Order'}) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button-group">
+                <a href="{{ path('app_orders_index') }}" class="btn btn-secondary back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Orders List
+                </a>
+                
+                {{ include('orders/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .edit-order-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .page-title i {
+            color: #6d28d9; /* Dark purple */
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .edit-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            color: white;
+            border-bottom: none;
+            padding: 25px 30px;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.4rem;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        /* Form Container */
+        .order-form-container {
+            width: 100%;
+        }
+
+        /* Form Layout */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 2rem;
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: block;
+        }
+
+        /* ================================================ */
+        /* ALL INPUTS & DROPDOWNS - EXACT SAME STYLING */
+        /* ================================================ */
+        
+        /* Base styling for ALL inputs and selects */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="date"],
+        input[type="datetime-local"],
+        input[type="time"],
+        select,
+        .form-control,
+        .form-select {
+            border-radius: 8px !important;
+            border: 1px solid #d1d5db !important;
+            padding: 14px 16px !important;
+            font-size: 1rem !important;
+            font-family: inherit !important;
+            color: #374151 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            height: 50px !important;
+            line-height: 22px !important;
+            margin: 0 !important;
+            display: block !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+
+        /* ================================================ */
+        /* ALL DROPDOWNS (Customer, Status, Products) - SAME STYLING */
+        /* ================================================ */
+        
+        /* ALL selects get dropdown arrow */
+        select,
+        .form-select {
+            appearance: none !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%235b21b6' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 16px center !important;
+            background-size: 16px !important;
+            padding-right: 40px !important;
+        }
+
+        /* ================================================ */
+        /* PRODUCTS MULTI-SELECT FIX - Show only first selected item */
+        /* ================================================ */
+        
+        /* Hide ALL option text inside the select when closed */
+        select[multiple],
+        select.form-control[multiple] {
+            position: relative;
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis !important;
+        }
+
+        /* Hide all options when select is not focused */
+        select[multiple] option,
+        select.form-control[multiple] option {
+            display: none !important;
+        }
+
+        /* Show a custom placeholder text for selected items */
+        select[multiple]::before,
+        select.form-control[multiple]::before {
+            content: attr(data-placeholder);
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 16px;
+            right: 40px;
+            color: #374151;
+            font-size: 1rem;
+            pointer-events: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* When dropdown is opened/focused */
+        select[multiple]:focus,
+        select.form-control[multiple]:focus {
+            height: auto !important;
+            min-height: 150px !important;
+            max-height: 300px !important;
+            overflow-y: auto !important;
+            white-space: normal !important;
+            background-image: none !important;
+            padding-right: 16px !important;
+        }
+
+        /* Show options when dropdown is opened */
+        select[multiple]:focus option,
+        select.form-control[multiple]:focus option {
+            display: block !important;
+            padding: 8px 12px !important;
+            margin: 2px 0 !important;
+        }
+
+        /* Style checked options in the dropdown */
+        select[multiple]:focus option:checked,
+        select.form-control[multiple]:focus option:checked {
+            background-color: #7c3aed !important;
+            color: white !important;
+        }
+
+        /* Remove the custom placeholder when focused */
+        select[multiple]:focus::before,
+        select.form-control[multiple]:focus::before {
+            display: none !important;
+        }
+
+        /* ================================================ */
+        /* TEXTAREA - KEEP SEPARATE */
+        /* ================================================ */
+        
+        textarea.form-control {
+            min-height: 150px !important;
+            height: auto !important;
+            line-height: 1.5 !important;
+            padding-top: 14px !important;
+            padding-bottom: 14px !important;
+            resize: vertical !important;
+        }
+
+        /* ================================================ */
+        /* FOCUS STATES - ALL INPUTS */
+        /* ================================================ */
+        
+        input:focus,
+        select:focus,
+        .form-control:focus,
+        .form-select:focus,
+        textarea:focus {
+            border-color: #7c3aed !important;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            outline: none !important;
+            background-color: #ffffff !important;
+        }
+
+        /* HOVER STATES */
+        select:hover,
+        .form-select:hover,
+        input:hover:not([type="submit"]):not([type="button"]) {
+            border-color: #9ca3af !important;
+        }
+
+        /* Ensure all form elements have consistent spacing */
+        .mb-3 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        /* Checkbox and Radio styling */
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin-top: 0;
+            accent-color: #7c3aed; /* Dark purple */
+        }
+
+        .form-check-label {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        /* Update button styling */
+        .btn-primary {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); /* Darker purple on hover */
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Back button */
+        .back-btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            background: #6c757d;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 48px;
+            line-height: 24px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Delete button */
+        .delete-form {
+            margin: 0;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 48px;
+            line-height: 24px;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        /* Form validation styling */
+        .is-invalid {
+            border-color: #f56565 !important;
+            background-color: rgba(245, 101, 101, 0.05) !important;
+        }
+
+        .invalid-feedback {
+            color: #f56565;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        /* Help text styling */
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Required field indicator */
+        .required-field::after {
+            content: " *";
+            color: #f56565;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .edit-order-container {
+                padding: 20px 15px;
+            }
+            
+            .card-body {
+                padding: 25px;
+            }
+            
+            .card-header {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .form-row {
+                gap: 20px;
+            }
+            
+            .form-col {
+                min-width: 100%;
+            }
+            
+            /* Responsive input sizes */
+            input[type="text"],
+            input[type="number"],
+            input[type="email"],
+            input[type="tel"],
+            input[type="url"],
+            input[type="date"],
+            select,
+            .form-control,
+            .form-select {
+                padding: 12px 14px !important;
+                font-size: 0.95rem !important;
+                height: 46px !important;
+            }
+            
+            /* Dropdown arrows */
+            select,
+            .form-select {
+                padding-right: 36px !important;
+                background-position: right 14px center !important;
+            }
+            
+            /* Products dropdown when focused on mobile */
+            select[multiple]:focus,
+            select.form-control[multiple]:focus {
+                min-height: 120px !important;
+            }
+            
+            /* Custom placeholder positioning on mobile */
+            select[multiple]::before,
+            select.form-control[multiple]::before {
+                left: 14px;
+                right: 36px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .back-btn,
+            .btn-danger,
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .edit-order-container {
+                padding: 15px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            input[type="text"],
+            input[type="number"],
+            input[type="email"],
+            input[type="tel"],
+            input[type="url"],
+            input[type="date"],
+            select,
+            .form-control,
+            .form-select {
+                padding: 11px 13px !important;
+                font-size: 0.9rem !important;
+                height: 44px !important;
+            }
+            
+            /* Dropdown arrows */
+            select,
+            .form-select {
+                padding-right: 34px !important;
+                background-position: right 13px center !important;
+            }
+            
+            /* Products dropdown when focused on small mobile */
+            select[multiple]:focus,
+            select.form-control[multiple]:focus {
+                min-height: 100px !important;
+            }
+            
+            /* Custom placeholder positioning on small mobile */
+            select[multiple]::before,
+            select.form-control[multiple]::before {
+                left: 13px;
+                right: 34px;
+                font-size: 0.9rem;
+            }
+            
+            .btn-primary,
+            .back-btn,
+            .btn-danger {
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find the products multi-select dropdown
+            const productsSelect = document.querySelector('select[multiple], select.form-control[multiple]');
+            
+            if (productsSelect) {
+                // Update the placeholder text based on selected items
+                function updateProductsPlaceholder() {
+                    const selectedOptions = Array.from(productsSelect.selectedOptions);
+                    
+                    if (selectedOptions.length === 0) {
+                        productsSelect.setAttribute('data-placeholder', 'Select products...');
+                    } else if (selectedOptions.length === 1) {
+                        productsSelect.setAttribute('data-placeholder', selectedOptions[0].text);
+                    } else {
+                        productsSelect.setAttribute('data-placeholder', `${selectedOptions.length} products selected`);
+                    }
+                }
+                
+                // Initial update
+                updateProductsPlaceholder();
+                
+                // Update when selection changes
+                productsSelect.addEventListener('change', updateProductsPlaceholder);
+                
+                // Update when dropdown is closed (blur event)
+                productsSelect.addEventListener('blur', updateProductsPlaceholder);
+            }
+        });
+    </script>
+{% endblock %}

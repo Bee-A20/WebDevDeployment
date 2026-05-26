@@ -1,0 +1,11 @@
+{% if form.vars.data.id %}
+    <div style="background: #e3f2fd; border-left: 4px solid #1976d2; padding: 16px; margin-bottom: 20px; border-radius: 4px; font-size: 14px;">
+        <strong>💡 Stock Management</strong><br>
+        Stock for this product is managed through <a href="{{ path('stock_index') }}" style="color: #1976d2; font-weight: 600;">Stock Management</a>. Use that page to add or modify stock quantities.
+    </div>
+{% endif %}
+
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}

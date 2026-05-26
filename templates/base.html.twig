@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PACUNLA{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #662d91;
+            --primary-dark: #4a1f6b;
+            --primary-light: #8b4bc4;
+            --secondary-color: #000000;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --border-color: #e0e0e0;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-white);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            /* No will-change here — it causes compositing layer shifts in main content */
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            /* White background so logo is always visible regardless of its color */
+            background-color: var(--bg-white);
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Lock the header height so it never collapses */
+            min-height: 88px;
+        }
+
+        .sidebar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            /* Prevent the link itself from shifting on click */
+            outline: none;
+        }
+
+        .sidebar-logo {
+            max-width: 300px;
+            width: 200%;
+            /* Explicit height stops the image from collapsing before it loads */
+            height: 150px;
+            display: block;
+            object-fit: contain;
+            object-position: center;
+            /* Prevent drag ghost from visually "removing" the image */
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            padding: 0 20px;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            list-style: none;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(102, 45, 145, 0.08);
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background-color: rgba(102, 45, 145, 0.12);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background-color: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 16px;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-white);
+            color: var(--primary-color);
+            font-size: 1rem;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .topbar-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .content-wrapper {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .main-content.no-sidebar {
+            margin-left: 0;
+        }
+
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 950;
+        }
+
+        .sidebar-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 0;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: min(80vw, 280px);
+                max-width: 100%;
+                left: 0;
+                top: 0;
+            }
+
+            .sidebar-toggle {
+                display: inline-flex;
+            }
+
+            .topbar {
+                padding: 14px 20px;
+            }
+
+            .topbar-user {
+                gap: 10px;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar-logo {
+                max-width: 150px;
+            }
+        }
+
+        /* ── Shared UI: tables and controls ── */
+        .table-container {
+            width: 100%;
+            margin: 16px 0 24px;
+            overflow: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-radius: 8px;
+            background: var(--bg-white);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 640px;
+        }
+
+        .table thead th {
+            padding: 14px 18px;
+            background: #fafafa;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: var(--text-light);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 0.4px;
+        }
+
+        .table tbody td {
+            padding: 14px 18px;
+            vertical-align: middle;
+            font-size: 14px;
+            color: var(--text-dark);
+            border-bottom: 1px solid rgba(224,224,224,0.6);
+        }
+
+        .table tbody tr:hover td {
+            background: rgba(102,45,145,0.03);
+        }
+
+        .table tbody tr:nth-child(even) td {
+            background: #ffffff;
+        }
+
+        .table tbody tr:nth-child(odd) td {
+            background: #fbfbfb;
+        }
+
+        .table .muted { color: var(--text-light); font-size: 13px; }
+
+        .text-right { text-align: right; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 12px;
+            min-width: 110px;
+            height: 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: transform 0.08s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+        }
+
+        .btn:active { transform: translateY(1px); }
+
+        .btn-primary { background: var(--primary-color); color: white; border-color: var(--primary-dark); }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-secondary { background: #ffffff; color: var(--text-dark); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: #f6f6f6; }
+
+        .btn-danger { background: #ff4d4f; color: white; border-color: #d9363e; }
+        .btn-danger:hover { background: #e33a3c; }
+
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            min-width: 96px;
+            height: 36px;
+            border-radius: 6px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid transparent;
+            background: transparent;
+        }
+
+        .action-link:hover { background: rgba(102,45,145,0.04); }
+
+        .action-link i { margin-right: 6px; }
+
+        .icon-only { display: inline-flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px; }
+
+        @media (max-width: 800px) {
+            .table { min-width: 540px; }
+            .table thead th, .table tbody td { padding: 10px 12px; }
+        }
+
+        /* Customer header/footer styles (global) */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .container {
+            width: min(100% - 2rem, 1180px);
+            margin-inline: auto;
+        }
+
+        .header-inner {
+            width: min(100% - 2rem, 1180px);
+            margin-inline: auto;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+        }
+
+        .brand-mark img {
+            height: 40px;
+            width: auto;
+            display: block;
+        }
+
+        .brand-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--secondary-color);
+            line-height: 1;
+        }
+
+        .brand-text span {
+            display: block;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            font-size: 0.72rem;
+            color: var(--text-light);
+            letter-spacing: 0.02em;
+        }
+
+        .nav-desktop {
+            display: flex;
+            align-items: center;
+            gap: 1.75rem;
+        }
+
+        .nav-desktop a:not(.btn) {
+            font-size: 0.94rem;
+            font-weight: 500;
+            color: #1e293b;
+            position: relative;
+            padding: 0.25rem 0;
+            text-decoration: none;
+        }
+
+        .nav-desktop a:not(.btn)::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 2px;
+            transition: width 0.2s ease;
+        }
+
+        .nav-desktop a:not(.btn):hover {
+            color: var(--primary-color);
+        }
+
+        .nav-desktop a:not(.btn):hover::after {
+            width: 100%;
+        }
+
+        .cart-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            min-width: 0;
+            box-shadow: none;
+        }
+
+        .cart-link:hover {
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+
+        .cart-link i {
+            font-size: 1.1rem;
+        }
+
+        .nav-desktop a.cart-link {
+            padding: 0;
+        }
+
+        .nav-desktop a.cart-link::after {
+            display: none;
+        }
+
+        .nav-desktop a.logout-link {
+            margin-left: auto;
+        }
+
+        .site-header .btn-login {
+            background: var(--primary-color);
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: none;
+            padding: 0.55rem 1.35rem;
+        }
+
+        .site-header .btn-login:hover {
+            background: var(--primary-dark);
+            box-shadow: none;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--secondary-color);
+            cursor: pointer;
+            font-size: 1.3rem;
+            padding: 0.35rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .site-header {
+            position: relative;
+        }
+
+        @media (max-width: 960px) {
+            .mobile-menu-toggle {
+                display: inline-flex;
+            }
+
+            .nav-desktop {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                gap: 0;
+                align-items: stretch;
+                padding: 1rem 0;
+                display: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                z-index: 20;
+            }
+
+            .nav-desktop.open {
+                display: flex;
+            }
+
+            .nav-desktop a:not(.btn) {
+                padding: 0.9rem 1.5rem;
+                border-top: 1px solid rgba(0, 0, 0, 0.06);
+            }
+
+            .nav-desktop a.cart-link,
+            .nav-desktop a.logout-link,
+            .nav-desktop a.btn-login {
+                margin-left: 0;
+            }
+
+            .nav-desktop {
+                gap: 0;
+            }
+
+            .header-inner {
+                flex-wrap: nowrap;
+            }
+        }
+
+        .site-footer {
+            background: #0a0a0a;
+            color: rgba(255, 255, 255, 0.78);
+            padding: 3rem 0 2.5rem;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-col {
+            min-width: 220px;
+            flex: 1;
+        }
+
+        .footer-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #9f7aea;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-brand small {
+            display: block;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin-top: 0.35rem;
+            line-height: 1.6;
+        }
+
+        .footer-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-list li a {
+            color: rgba(255, 255, 255, 0.72);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .footer-list li a:hover {
+            color: #ffffff;
+        }
+
+        .footer-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 1rem;
+        }
+
+        .footer-social {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .footer-social span {
+            color: rgba(255, 255, 255, 0.9);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-social span:hover {
+            color: #ffffff;
+            background: transparent;
+        }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        @media (max-width: 768px) {
+            .footer-inner {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .footer-col {
+                min-width: auto;
+            }
+        }
+
+        {% block stylesheets %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% if not (is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF')) %}
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="{{ path('app_landing_page') }}#home" class="brand">
+                <span class="brand-mark"><img src="{{ asset('BeaBrandGuideLogos/Icon_Logo1.png') }}" alt="Pacunla Logo" loading="lazy"></span>
+                <span class="brand-text">Pacunla<span style="font-size:0.8rem;color:#6b7280;font-weight:400">School Supplies &amp; Stationery</span></span>
+            </a>
+            <button class="mobile-menu-toggle" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-desktop" aria-label="Primary">
+                <a href="{{ path('app_landing_page') }}#home">Home</a>
+                <a href="{{ path('app_landing_page') }}#products">Collection</a>
+                <a href="{{ path('app_shop') }}">Shop</a>
+                <a href="{{ path('app_about') }}">About</a>
+                <a href="{{ path('app_contact') }}">Contact</a>
+                {% if app.user %}
+                    <a href="{{ path('app_orders_index') }}">Orders</a>
+                    <a href="{{ path('app_cart') }}" class="cart-link" aria-label="Cart"><i class="fa-solid fa-cart-shopping"></i></a>
+                    <a href="{{ path('app_logout') }}" class="btn btn-login logout-link">Logout</a>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-login">Login</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    {% endif %}
+    {% set show_sidebar = is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+    <div class="app-container">
+
+        {% if show_sidebar %}
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="{{ path('app_products_index') }}" class="sidebar-brand">
+                    <img
+                        src="{{ asset('BeaBrandGuideLogos/pacunla_logo.png') }}"
+                        alt="PACUNLA Logo"
+                        class="sidebar-logo"
+                        draggable="false"
+                    >
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+                    <li class="nav-item">
+                        <a href="{{ path('app_dashboard') }}" class="nav-link {{ app.request.get('_route') == 'app_dashboard' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li class="nav-item">
+                        <a href="{{ path('app_products_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_products' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-box"></i>
+                            Products
+                        </a>
+                    </li>
+
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+                    <li class="nav-item">
+                        <a href="{{ path('app_customer_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_customer' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users"></i>
+                            Customers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_orders_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_orders' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-shopping-cart"></i>
+                            Orders
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <li class="nav-item">
+                        <a href="{{ path('app_user_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_user' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users-cog"></i>
+                            User Management
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+                    <li class="nav-item">
+                        <a href="{{ path('stock_index') }}" class="nav-link {{ app.request.get('_route') starts with 'stock' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-boxes"></i>
+                            Stock Management
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{{ path('app_activity_logs_index') }}" class="nav-link {{ app.request.get('_route') starts with 'app_activity_logs' ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            Activity Logs
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('app_logout') }}" class="nav-link">
+                            <i class="nav-icon fas fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="main-content {{ not show_sidebar ? 'no-sidebar' : '' }}">
+            {% if not (hide_topbar|default(false)) %}
+            <div class="topbar">
+                    {% if show_sidebar %}
+                    <button type="button" class="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
+                    {% endif %}
+                    <div class="topbar-title">
+                        {% block page_title %}Dashboard{% endblock %}
+                    </div>
+                    <div class="topbar-user">
+                        <div class="user-info">
+                            <div class="user-name">{{ app.user.username }}</div>
+                            <div class="user-role">
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    Administrator
+                                {% elseif is_granted('ROLE_STAFF') %}
+                                    Staff Member
+                                {% else %}
+                                    User
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="content-wrapper">
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label }}">{{ message }}</div>
+                    {% endfor %}
+                {% endfor %}
+
+                {% block body %}{% endblock %}
+            </div>
+        </main>
+
+        {% if show_sidebar %}
+        <div class="sidebar-backdrop" aria-hidden="true"></div>
+        {% endif %}
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-col">
+                <div class="footer-brand">PACUNLA</div>
+                <small>Your trusted source for school supplies and stationery.</small>
+            </div>
+            <div class="footer-col">
+                <div class="footer-title">Quick links</div>
+                <ul class="footer-list">
+                    <li><a href="{{ path('app_landing_page') }}#home">Home</a></li>
+                    <li><a href="{{ path('app_shop') }}">Products</a></li>
+                    <li><a href="{{ path('app_about') }}">About</a></li>
+                    <li><a href="{{ path('app_contact') }}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <div class="footer-title">Follow us</div>
+                <div class="footer-social">
+                    <span aria-label="Facebook"><i class="fab fa-facebook-f"></i></span>
+                    <span aria-label="Twitter"><i class="fab fa-twitter"></i></span>
+                    <span aria-label="Instagram"><i class="fab fa-instagram"></i></span>
+                </div>
+                <div class="footer-note">© {{ "now"|date('Y') }} Pacunla. All rights reserved.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var sidebar = document.querySelector('.sidebar');
+            var toggle = document.querySelector('.sidebar-toggle');
+            var backdrop = document.querySelector('.sidebar-backdrop');
+            if (!sidebar || !toggle || !backdrop) return;
+
+            function closeSidebar() {
+                sidebar.classList.remove('mobile-open');
+                backdrop.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+            function openSidebar() {
+                sidebar.classList.add('mobile-open');
+                backdrop.classList.add('open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+
+            toggle.addEventListener('click', function () {
+                if (sidebar.classList.contains('mobile-open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+
+            backdrop.addEventListener('click', closeSidebar);
+
+            sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    if (window.matchMedia('(max-width: 768px)').matches) {
+                        closeSidebar();
+                    }
+                });
+            });
+        })();
+    </script>
+
+    <script>
+        // Prevent back button access after logout
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) {
+                window.location.reload(true);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var menuToggle = document.querySelector('.mobile-menu-toggle');
+            var navDesktop = document.querySelector('.nav-desktop');
+
+            if (!menuToggle || !navDesktop) {
+                return;
+            }
+
+            menuToggle.addEventListener('click', function () {
+                var expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+                menuToggle.setAttribute('aria-expanded', !expanded);
+                navDesktop.classList.toggle('open');
+            });
+
+            navDesktop.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    if (window.matchMedia('(max-width: 960px)').matches) {
+                        navDesktop.classList.remove('open');
+                        menuToggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

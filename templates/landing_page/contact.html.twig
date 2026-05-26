@@ -1,0 +1,337 @@
+{% extends 'base.html.twig' %}
+{% set hide_topbar = true %}
+{% block title %}Contact · Pacunla{% endblock %}
+{% block page_title %}Contact{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+:root {
+            --primary: #662d91;
+            --primary-dark: #4a1f6b;
+            --primary-light: #8b4bc4;
+            --primary-soft: rgba(102, 45, 145, 0.08);
+            --black: #0a0a0a;
+            --text: #1f1f24;
+            --muted: #5c5c66;
+            --border: rgba(0, 0, 0, 0.08);
+            --surface: #ffffff;
+            --surface-alt: #f6f5f9;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --shadow: 0 4px 24px rgba(25, 12, 45, 0.06);
+            --shadow-hover: 0 12px 40px rgba(25, 12, 45, 0.12);
+            --max: 1180px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            color: var(--text);
+            background: var(--surface);
+            line-height: 1.65;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: var(--black);
+            line-height: 1.2;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            width: min(100% - 2rem, var(--max));
+            margin-inline: auto;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 12px;
+            z-index: 9999;
+            padding: 10px 14px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .skip-link:focus { left: 12px; }
+
+        /* Sections */
+        .section { padding: clamp(3.5rem, 6vw, 5rem) 0; }
+
+        .section-head {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .section-head .eyebrow {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .section-head h2 { font-size: clamp(1.65rem, 2.8vw, 2.25rem); margin-bottom: 0.65rem; }
+        .section-head p { color: var(--muted); font-size: 1.02rem; }
+
+        #contact {
+            background-image: url('{{ asset("backround/background2.png") }}');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            padding-bottom: 2rem !important;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .contact-form {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .contact-form iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .contact-aside {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .contact-aside-map,
+        .contact-aside-photo {
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background: transparent;
+        }
+        .contact-aside-photo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: none;
+        }
+        .contact-aside-map iframe {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            border: none;
+        }
+        .contact-aside-map {
+            min-height: 260px;
+            height: 260px;
+        }
+
+        .contact-map-heading {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--black);
+            text-align: center;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .contact-aside-map {
+            display: flex;
+            flex-direction: column;
+            min-height: 280px;
+            height: 280px;
+            padding: 0;
+        }
+
+        .office-details {
+            background: var(--surface-alt);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .office-line {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            color: var(--text);
+            margin-bottom: 0.85rem;
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+        .office-line:last-child { margin-bottom: 0; }
+        .office-line i {
+            color: var(--primary);
+            min-width: 1.2rem;
+            font-size: 1rem;
+        }
+
+        .contact-aside-inner h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .contact-aside-inner p {
+            color: var(--muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-line {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        .contact-line i {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--black);
+            color: #fff;
+            padding: 3rem 0 2rem;
+            margin-top: 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col h4 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .footer-col a {
+            display: block;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 0.5rem;
+            transition: color 0.2s ease;
+        }
+        .footer-col a:hover { color: #fff; }
+
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .social-icons a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+        .social-icons a:hover { background: var(--primary); }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.875rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-desktop { display: none; }
+            .menu-toggle { display: inline-flex; }
+            .nav-mobile {
+                display: none;
+                padding-bottom: 1rem;
+            }
+            .nav-mobile.open { display: block; }
+            .nav-mobile-inner {
+                background: var(--surface-alt);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            .nav-mobile a:not(.btn) {
+                padding: 0.85rem 1rem;
+                border-radius: var(--radius-sm);
+                font-weight: 500;
+                color: #1e293b;
+            }
+            .nav-mobile a:not(.btn):hover { background: var(--primary-soft); color: var(--primary); }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .contact-form iframe {
+                height: 500px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .btn, .social-icons a { transition: none; }
+        }
+{% endblock %}
+
+{% block body %}
+<a class="skip-link" href="#main">Skip to content</a>
+<main id="main">
+        <section class="section" id="contact">
+            <div class="container">
+                <div class="section-head">
+                    <p class="eyebrow">Get in touch</p>
+                    <h2>Contact us</h2>
+                    <p>Questions about products or orders? Send us a message—we're happy to help.</p>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-form">
+                        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc5aJe6lmaKNiwicwoGeCNOpqYykW09CJC_AafbMqAXsGXzgw/viewform?embedded=true" marginheight="0" marginwidth="0">Loading…</iframe>
+                    </div>
+                    <aside class="contact-aside">
+                        <h4 class="contact-map-heading">Visit Our Office</h4>
+                        <div class="contact-aside-map">
+                            <iframe
+                                src="https://www.google.com/maps?q=Zamboanguita%2C+Negros+Oriental&amp;z=15&amp;output=embed"
+                                width="100%"
+                                height="100%"
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Pacunla location map"
+                                style="border:0;"
+                            ></iframe>
+                        </div>
+                        <div class="office-details">
+                            <div class="office-line"><i class="fa-solid fa-map-pin"></i><span>Zamboanguita, Negros Oriental, Philippines</span></div>
+                            <div class="office-line"><i class="fa-solid fa-clock"></i><span>Mon–Sat: 9:00 AM – 6:00 PM</span></div>
+                            <div class="office-line"><i class="fa-solid fa-phone"></i><span>+63 912 345 6789</span></div>
+                            <div class="office-line"><i class="fa-solid fa-envelope"></i><span>support@pacunla.com</span></div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

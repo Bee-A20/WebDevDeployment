@@ -1,0 +1,361 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ customer.name }} - Customer Details{% endblock %}
+
+{% block body %}
+    <div class="show-customer-container">
+        <div class="header-section">
+            <h1 class="page-title">
+                <i class="fas fa-user"></i> Customer Details
+            </h1>
+            <p class="page-subtitle">View detailed information about {{ customer.name }}</p>
+        </div>
+
+        <div class="card details-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user-circle"></i> {{ customer.name }}
+                </h2>
+                <div class="customer-id">ID: {{ customer.id }}</div>
+            </div>
+            <div class="card-body">
+                <div class="details-container">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-user"></i> Customer Name
+                            </div>
+                            <div class="detail-value">{{ customer.name }}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-envelope"></i> Email Address
+                            </div>
+                            <div class="detail-value">
+                                <a href="mailto:{{ customer.email }}" class="email-link">{{ customer.email }}</a>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-phone"></i> Phone Number
+                            </div>
+                            <div class="detail-value">{{ customer.phoneNumber }}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-calendar-alt"></i> Created At
+                            </div>
+                            <div class="detail-value">{{ customer.createdAt ? customer.createdAt|date('F j, Y, g:i a') : 'Not available' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button-group">
+                <a href="{{ path('app_customer_index') }}" class="btn btn-secondary back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Customers List
+                </a>
+
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') or (customer.getCreatedBy() and app.user and customer.getCreatedBy().getId() == app.user.getId()) %}
+                    <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-primary edit-btn">
+                        <i class="fas fa-edit"></i> Edit Customer
+                    </a>
+
+                    {{ include('customer/_delete_form.html.twig') }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .show-customer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .page-title i {
+            color: #6d28d9; /* Dark purple */
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .details-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            color: white;
+            border-bottom: none;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.6rem;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+        }
+
+        .customer-id {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .detail-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #7c3aed; /* Dark purple accent */
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #5b21b6; /* Dark purple */
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-label i {
+            font-size: 1.1rem;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .email-link {
+            color: #5b21b6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .email-link:hover {
+            color: #7c3aed;
+            text-decoration: underline;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Back button */
+        .back-btn {
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            background: #6c757d;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 48px;
+            line-height: 20px;
+            font-size: 1rem;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Edit button */
+        .edit-btn {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); /* Darker purple on hover */
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Delete button */
+        .delete-form {
+            margin: 0;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .show-customer-container {
+                padding: 20px 15px;
+            }
+            
+            .card-body {
+                padding: 25px;
+            }
+            
+            .card-header {
+                padding: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .action-buttons {
+                margin-top: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .back-btn,
+            .edit-btn,
+            .btn-danger {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .show-customer-container {
+                padding: 15px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            .detail-item {
+                padding: 15px;
+            }
+            
+            .action-buttons {
+                margin-top: 15px;
+            }
+        }
+    </style>
+{% endblock %}

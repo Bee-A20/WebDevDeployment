@@ -1,0 +1,525 @@
+{% extends 'base.html.twig' %}
+{% set hide_topbar = not (is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF')) %}
+
+{% block title %}{{ order.customer ? order.customer.name : 'Order' }} - Order Details{% endblock %}
+
+{% block page_title %}Order Details{% endblock %}
+
+{% block body %}
+    <div class="show-order-container">
+        <div class="header-section">
+            <h1 class="page-title">
+                <i class="fas fa-receipt"></i> Order Details
+            </h1>
+            <p class="page-subtitle">View detailed information about Order #{{ order.id }}</p>
+        </div>
+
+        <div class="card details-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-shopping-cart"></i> Order #{{ order.id }}
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="details-container">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-hashtag"></i> Order ID
+                            </div>
+                            <div class="detail-value order-id">#{{ order.id }}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-user"></i> Customer
+                            </div>
+                            <div class="detail-value">
+                                {% if order.customer %}
+                                    <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}" class="customer-link">
+                                        {{ order.customer.name }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item full-width">
+                            <div class="detail-label">
+                                <i class="fas fa-boxes"></i> Products
+                            </div>
+                            <div class="products-list">
+                                {% if order.orderItems|length > 0 %}
+                                    <div class="products-grid">
+                                        {% for item in order.orderItems %}
+                                            <div class="product-item">
+                                                <i class="fas fa-box"></i>
+                                                <span class="product-name">
+                                                    {% if item.product and item.product.id is defined %}
+                                                        <a href="{{ path('app_products_show', {'id': item.product.id}) }}" class="product-link">
+                                                            {{ item.product.name }}
+                                                        </a>
+                                                    {% else %}
+                                                        {{ item.product ? item.product.name : 'Unknown product' }}
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="no-products">
+                                        <i class="fas fa-exclamation-circle"></i> No products in this order
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-sort-amount-up"></i> Quantity
+                            </div>
+                            <div class="detail-value quantity-value">
+                                {% set totalQuantity = 0 %}
+                                {% for item in order.orderItems %}
+                                    {% set totalQuantity = totalQuantity + (item.quantity ?: 0) %}
+                                {% endfor %}
+                                {{ totalQuantity }}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-info-circle"></i> Status
+                            </div>
+                            <div class="detail-value">
+                                <span class="status-badge badge-{{ order.status|lower }}">{{ order.status|capitalize }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-calendar-alt"></i> Created At
+                            </div>
+                            <div class="detail-value">{{ order.createdAt ? order.createdAt|date('F j, Y, g:i a') : 'Not available' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button-group">
+                <a href="{{ path('app_orders_index') }}" class="btn btn-secondary back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Orders List
+                </a>
+
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+                    {% if order.status is not defined or order.status|lower not in ['delivered', 'cancelled'] %}
+                        <a href="{{ path('app_orders_edit', {'id': order.id}) }}" class="btn btn-primary edit-btn">
+                            <i class="fas fa-edit"></i> Edit Order
+                        </a>
+                    {% endif %}
+
+                    {{ include('orders/_delete_form.html.twig', {'button_label': 'Delete'}) }}
+                {% elseif order.getCreatedBy() and app.user and order.getCreatedBy().getId() == app.user.getId() %}
+                    {{ include('orders/_delete_form.html.twig', {'button_label': 'Cancel Order'}) }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .show-order-container {
+            max-width: min(100% - 2rem, 1180px);
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .page-title i {
+            color: #6d28d9; /* Dark purple */
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .details-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            color: white;
+            border-bottom: none;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.6rem;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+        }
+
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pending {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .badge-processing {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .badge-shipped {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .badge-delivered {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .badge-cancelled {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .detail-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #7c3aed; /* Dark purple accent */
+        }
+
+        .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #5b21b6; /* Dark purple */
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-label i {
+            font-size: 1.1rem;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .order-id {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #6d28d9;
+        }
+
+        .quantity-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #f59e0b; /* Orange for quantity */
+        }
+
+        .customer-link,
+        .product-link {
+            color: #5b21b6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .customer-link:hover,
+        .product-link:hover {
+            color: #7c3aed;
+            text-decoration: underline;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+            font-style: italic;
+        }
+
+        /* Products list */
+        .products-list {
+            padding: 20px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #10b981; /* Green accent for products */
+        }
+
+        .product-item i {
+            color: #10b981;
+            font-size: 1rem;
+        }
+
+        .product-name {
+            font-weight: 500;
+        }
+
+        .no-products {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6c757d;
+            font-style: italic;
+            padding: 10px;
+        }
+
+        .no-products i {
+            color: #f59e0b;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Back button */
+        .back-btn {
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            background: #6c757d;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 48px;
+            line-height: 20px;
+            font-size: 1rem;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Edit button */
+        .edit-btn {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Dark purple gradient */
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); /* Darker purple on hover */
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Delete button */
+        .delete-form {
+            margin: 0;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .show-order-container {
+                padding: 20px 15px;
+            }
+            
+            .card-body {
+                padding: 25px;
+            }
+            
+            .card-header {
+                padding: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                margin-top: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .back-btn,
+            .edit-btn,
+            .btn-danger {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .show-order-container {
+                padding: 15px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            .detail-item {
+                padding: 15px;
+            }
+            
+            .product-item {
+                padding: 10px 12px;
+            }
+            
+            .action-buttons {
+                margin-top: 15px;
+            }
+        }
+    </style>
+{% endblock %}

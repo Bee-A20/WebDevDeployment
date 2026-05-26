@@ -1,0 +1,348 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Products{% endblock %}
+
+{% block body %}
+    <div class="edit-products-container">
+        <div class="header-section">
+            <h1 class="page-title">
+                <i class="fas fa-edit"></i> Edit Product
+            </h1>
+            <p class="page-subtitle">Modify product information</p>
+        </div>
+
+        <div class="card edit-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-box-open"></i> Product Details
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="product-form-container">
+                    {{ include('products/_form.html.twig', {'button_label': 'Update Product'}) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button-group">
+                <a href="{{ path('app_products_index') }}" class="btn btn-secondary back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Products List
+                </a>
+                
+                {{ include('products/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .edit-products-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .page-title i {
+            color: #6d28d9; /* Changed from #3498db to dark purple */
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .edit-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Changed to dark purple gradient */
+            color: white;
+            border-bottom: none;
+            padding: 25px 30px;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.4rem;
+        }
+
+        .card-title i {
+            margin-right: 12px;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        /* Form Container */
+        .product-form-container {
+            width: 100%;
+        }
+
+        /* Ensure proper spacing after the description field */
+        .product-form-container textarea {
+            margin-bottom: 60px !important;
+        }
+
+        /* Add spacing before the Update button */
+        .product-form-container .btn-primary {
+            margin-top: 40px !important;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        /* Form Layout */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 2rem;
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: block;
+        }
+
+        /* Consistent Input Sizes */
+        .form-control,
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="date"],
+        select.form-control,
+        textarea.form-control {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 14px 16px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            height: 50px;
+            width: 100%;
+            background: #f8f9fa;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        input.form-control,
+        select.form-control {
+            height: 50px;
+            line-height: 22px;
+        }
+
+        /* Textarea specific */
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+            height: auto;
+            line-height: 1.5;
+            padding-top: 14px;
+            padding-bottom: 14px;
+        }
+
+        /* Focus states */
+        .form-control:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #7c3aed; /* Changed from #667eea to dark purple */
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); /* Changed to dark purple shadow */
+            background: #fff;
+            outline: none;
+        }
+
+        /* Update button styling */
+        .btn-primary {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); /* Changed to dark purple gradient */
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); /* Darker purple on hover */
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Back button */
+        .back-btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            background: #6c757d;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 48px;
+            line-height: 24px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Delete button */
+        .delete-form {
+            margin: 0;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 48px;
+            line-height: 24px;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .edit-products-container {
+                padding: 20px 15px;
+            }
+            
+            .card-body {
+                padding: 25px;
+            }
+            
+            .card-header {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .product-form-container textarea {
+                margin-bottom: 40px !important;
+            }
+            
+            .product-form-container .btn-primary {
+                margin-top: 30px !important;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .back-btn,
+            .btn-danger,
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .edit-products-container {
+                padding: 15px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            .product-form-container textarea {
+                margin-bottom: 30px !important;
+            }
+            
+            .product-form-container .btn-primary {
+                margin-top: 25px !important;
+            }
+        }
+    </style>
+{% endblock %}

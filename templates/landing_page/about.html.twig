@@ -1,0 +1,465 @@
+{% extends 'base.html.twig' %}
+{% set hide_topbar = true %}
+{% block title %}About · Pacunla{% endblock %}
+{% block page_title %}About{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+:root {
+            --primary: #662d91;
+            --primary-dark: #4a1f6b;
+            --primary-light: #8b4bc4;
+            --primary-soft: rgba(102, 45, 145, 0.08);
+            --black: #0a0a0a;
+            --text: #1f1f24;
+            --muted: #5c5c66;
+            --border: rgba(0, 0, 0, 0.08);
+            --surface: #ffffff;
+            --surface-alt: #f6f5f9;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --shadow: 0 4px 24px rgba(25, 12, 45, 0.06);
+            --shadow-hover: 0 12px 40px rgba(25, 12, 45, 0.12);
+            --max: 1180px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            color: var(--text);
+            background: var(--surface);
+            line-height: 1.65;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: var(--black);
+            line-height: 1.2;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            width: min(100% - 2rem, var(--max));
+            margin-inline: auto;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 12px;
+            z-index: 9999;
+            padding: 10px 14px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .skip-link:focus { left: 12px; }
+
+        /* Sections */
+        .section { padding: clamp(3.5rem, 6vw, 5rem) 0; }
+
+        .section-head {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .section-head .eyebrow {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .section-head h2 { font-size: clamp(1.65rem, 2.8vw, 2.25rem); margin-bottom: 0.65rem; }
+        .section-head p { color: var(--muted); font-size: 1.02rem; }
+
+        #about {
+            background-image: url('{{ asset("backround/background.png") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .commitment-box {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--surface-alt);
+            border-radius: var(--radius);
+            text-align: center;
+        }
+        .commitment-box p {
+            font-size: 1.125rem;
+            line-height: 1.7;
+        }
+
+        #testimonials {
+            background-image: url('{{ asset("backround/background.png") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .benefit-card {
+            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s ease;
+        }
+        .benefit-card:hover { box-shadow: var(--shadow-hover); }
+
+        .benefit-icon-wrap {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(102, 45, 145, 0.08);
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .testimonial-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .testimonial-content p {
+            margin: 0 0 1rem;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .testimonial-author img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .testimonial-author strong {
+            display: block;
+        }
+
+        .testimonial-author span {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(240px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+            justify-items: stretch;
+        }
+
+        .team-card {
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: box-shadow 0.2s ease;
+        }
+        .team-card:hover { box-shadow: var(--shadow-hover); }
+
+        .team-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 2.5rem;
+        }
+
+        .team-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .bea-photo,
+        .bianca-photo,
+        .shaira-photo {
+            object-position: center 28%;
+        }
+
+        .team-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .team-card strong {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .team-card p:last-child {
+            margin-top: 1rem;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--black);
+            color: #fff;
+            padding: 3rem 0 2rem;
+            margin-top: 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col h4 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .footer-col a {
+            display: block;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 0.5rem;
+            transition: color 0.2s ease;
+        }
+        .footer-col a:hover { color: #fff; }
+
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .social-icons a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+        .social-icons a:hover { background: var(--primary); }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.875rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-desktop { display: none; }
+            .menu-toggle { display: inline-flex; }
+            .nav-mobile {
+                display: none;
+                padding-bottom: 1rem;
+            }
+            .nav-mobile.open { display: block; }
+            .nav-mobile-inner {
+                background: var(--surface-alt);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            .nav-mobile a:not(.btn) {
+                padding: 0.85rem 1rem;
+                border-radius: var(--radius-sm);
+                font-weight: 500;
+                color: #1e293b;
+            }
+            .nav-mobile a:not(.btn):hover { background: var(--primary-soft); color: var(--primary); }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .team-card, .btn, .social-icons a { transition: none; }
+        }
+{% endblock %}
+
+{% block body %}
+<a class="skip-link" href="#main">Skip to content</a>
+<main id="main">
+        <section class="section benefits" id="why-us">
+            <div class="container">
+                <div class="section-head">
+                    <p class="eyebrow">Why choose us</p>
+                    <h2>Why choose Pacunla?</h2>
+                    <p>We focus on value, quality, and a shopping experience that respects your time.</p>
+                </div>
+                <div class="benefits-grid">
+                    <article class="benefit-card">
+                        <div class="benefit-icon-wrap"><i class="fa-solid fa-tags"></i></div>
+                        <h3>Affordable pricing</h3>
+                        <p>Get the best quality products at prices that fit your budget.</p>
+                    </article>
+                    <article class="benefit-card">
+                        <div class="benefit-icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h3>Reliable quality</h3>
+                        <p>Premium supplies you can trust for studies and work.</p>
+                    </article>
+                    <article class="benefit-card">
+                        <div class="benefit-icon-wrap"><i class="fa-solid fa-palette"></i></div>
+                        <h3>Stylish designs</h3>
+                        <p>Modern products that reflect your personality.</p>
+                    </article>
+                    <article class="benefit-card">
+                        <div class="benefit-icon-wrap"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <h3>Easy shopping</h3>
+                        <p>Simple, fast online browsing and checkout.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="about">
+            <div class="container">
+                <div class="section-head">
+                    <p class="eyebrow">Our promise</p>
+                    <h2>Our commitment</h2>
+                </div>
+                <div class="commitment-box">
+                    <p>At Pacunla, we're committed to empowering students and professionals with premium school supplies and stationery that inspire creativity and productivity. Every notebook, pen, and organizer we offer is carefully selected for quality and durability—because we believe that the right tools make learning and working more enjoyable. From students tackling assignments to professionals organizing their workspace, Pacunla provides everything you need at prices that make excellence accessible to everyone.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="team">
+            <div class="container">
+                <div class="section-head">
+                    <p class="eyebrow">Meet the Team</p>
+                    <h2>People behind Pacunla</h2>
+                </div>
+                <div class="team-grid">
+                    <article class="team-card">
+                        <div class="team-photo"><img class="bea-photo" src="{{ asset('team/Bea_Ceo.png') }}" alt="Bea Lyn Pacunla - Founder & CEO" loading="lazy"></div>
+                        <h3>Bea Lyn Pacunla</h3>
+                        <p><strong>Founder & CEO</strong></p>
+                        <p>Bea leads our vision and brand, ensuring every product, experience, and promise reflects Pacunla's commitment to quality and accessibility.</p>
+                    </article>
+                    <article class="team-card">
+                        <div class="team-photo"><img class="bianca-photo" src="{{ asset('team/Bianca_OD.png') }}" alt="Bianca Lewis - Operations Director" loading="lazy"></div>
+                        <h3>Bianca Lewis</h3>
+                        <p><strong>Operations Director</strong></p>
+                        <p>Bianca oversees day-to-day operations, shipping, and customer support, making sure every order arrives quickly and accurately.</p>
+                    </article>
+                    <article class="team-card">
+                        <div class="team-photo"><img class="shaira-photo" src="{{ asset('team/Shaira_CD.png') }}" alt="Shaira Blakely - Creative Director" loading="lazy"></div>
+                        <h3>Shaira Blakely</h3>
+                        <p><strong>Creative Director</strong></p>
+                        <p>Shaira designs our brand experience and product collections with a focus on modern style, function, and student-friendly usability.</p>
+                    </article>
+                    <article class="team-card">
+                        <div class="team-photo"><img src="{{ asset('team/Yannah_CEL.png') }}" alt="Yannah Dela Vega - Customer Experience Lead" loading="lazy"></div>
+                        <h3>Yannah Dela Vega</h3>
+                        <p><strong>Customer Experience Lead</strong></p>
+                        <p>Yannah ensures every customer interaction is helpful and fast, from product questions to order follow-ups and support.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section testimonials" id="testimonials">
+            <div class="container">
+                <div class="section-head">
+                    <p class="eyebrow">What our customers say</p>
+                    <h2>Trusted by students & professionals</h2>
+                    <p>Join thousands of satisfied customers who rely on Pacunla for their school and office supplies.</p>
+                </div>
+                <div class="testimonials-grid">
+                    <article class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"Pacunla has everything I need for my architecture studies. The quality is excellent and the prices are unbeatable. My go-to for all my supplies!"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="{{ asset('sample-users/sample_user1.png') }}" width="50" height="50" alt="Architecture Student" loading="lazy">
+                            <div>
+                                <strong>Sarah M.</strong>
+                                <span>Architecture Student</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"As a teacher, I appreciate the reliable quality and variety of supplies. My classroom is always well-stocked thanks to Pacunla's excellent selection."</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="{{ asset('sample-users/sample_user2.png') }}" width="50" height="50" alt="High School Teacher" loading="lazy">
+                            <div>
+                                <strong>Michael R.</strong>
+                                <span>High School Teacher</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="testimonial-card">
+                        <div class="testimonial-content">
+                            <p>"Perfect for my home office setup. Professional quality supplies at student-friendly prices. Fast shipping and great customer service too!"</p>
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="{{ asset('sample-users/sample_user3.png') }}" width="50" height="50" alt="Graphic Designer" loading="lazy">
+                            <div>
+                                <strong>Emma L.</strong>
+                                <span>Graphic Designer</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile - PACUNLA{% endblock %}
+
+{% block body %}
+    <h1>My Profile</h1>
+
+    <dl>
+        <dt>Username</dt>
+        <dd>{{ user.username }}</dd>
+
+        <dt>Email</dt>
+        <dd>{{ user.email ?? '-' }}</dd>
+
+        <dt>Full Name</dt>
+        <dd>{{ user.fullName ?? '-' }}</dd>
+
+        <dt>Role</dt>
+        <dd>{{ user.getRoles()|join(', ') }}</dd>
+
+        <dt>Status</dt>
+        <dd>{{ user.isActive() ? 'Active' : 'Disabled' }}</dd>
+    </dl>
+
+    <a href="{{ path('app_profile_change_password') }}" class="btn btn-primary">Change password</a>
+{% endblock %}

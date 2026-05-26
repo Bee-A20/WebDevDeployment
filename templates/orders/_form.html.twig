@@ -1,0 +1,66 @@
+{{ form_start(form, {'attr': {'class': 'form-container'}}) }}
+    <div class="form-grid">
+        <!-- Customer Field -->
+        <div class="form-group">
+            {{ form_label(form.customer) }}
+            {{ form_widget(form.customer, {'attr': {'class': 'form-control'}}) }}
+            {% if form.customer.vars.errors|length > 0 %}
+                <div class="form-error">
+                    {{ form_errors(form.customer) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Products Field -->
+        <div class="form-group">
+            {{ form_label(form.products) }}
+            {{ form_widget(form.products, {'attr': {'class': 'form-control'}}) }}
+            {% if form.products.vars.errors|length > 0 %}
+                <div class="form-error">
+                    {{ form_errors(form.products) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Quantity Field -->
+        <div class="form-group">
+            {{ form_label(form.quantity) }}
+            {{ form_widget(form.quantity, {'attr': {'class': 'form-control'}}) }}
+            {% if form.quantity.vars.errors|length > 0 %}
+                <div class="form-error">
+                    {{ form_errors(form.quantity) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Created At Field -->
+        <div class="form-group">
+            {{ form_label(form.createdAt) }}
+            {{ form_widget(form.createdAt, {'attr': {'class': 'form-control'}}) }}
+            {% if form.createdAt.vars.errors|length > 0 %}
+                <div class="form-error">
+                    {{ form_errors(form.createdAt) }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Status Field -->
+        <div class="form-group">
+            {{ form_label(form.status) }}
+            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+            {% if form.status.vars.errors|length > 0 %}
+                <div class="form-error">
+                    {{ form_errors(form.status) }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check-circle"></i> {{ button_label|default('Save') }}
+        </button>
+    </div>
+
+    {{ form_end(form) }}
+

@@ -1,0 +1,254 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Customer - PACUNLA{% endblock %}
+
+{% block page_title %}Create Customer{% endblock %}
+
+{% block body %}
+    <div class="new-customer-container">
+        <div class="header-section">
+            <h1 class="page-title">
+                <i class="fas fa-user-plus"></i> Create New Customer
+            </h1>
+            <p class="page-subtitle">Add a new customer to your system</p>
+        </div>
+
+        <div class="card new-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-user"></i> Customer Information
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="customer-form-container">
+                    {{ include('customer/_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="button-group">
+                <a href="{{ path('app_customer_index') }}" class="btn btn-secondary back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Customers List
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .new-customer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 2rem;
+        }
+
+        .page-title i {
+            color: #6d28d9;
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .new-card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+            color: white;
+            border-bottom: none;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.4rem;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        .customer-form-container {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: block;
+        }
+
+        .form-control,
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select.form-control,
+        textarea.form-control {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 14px 16px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            height: 50px;
+            width: 100%;
+            background: #f8f9fa;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+            height: auto;
+            line-height: 1.5;
+            padding-top: 14px;
+            padding-bottom: 14px;
+        }
+
+        .form-control:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+            background: #fff;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+            border: none;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            cursor: pointer;
+            height: 48px;
+            line-height: 20px;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+            color: white;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .back-btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            background: #6c757d;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 48px;
+            line-height: 24px;
+            font-size: 1rem;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .new-customer-container {
+                padding: 20px 16px;
+            }
+
+            .page-title {
+                font-size: 1.6rem;
+            }
+
+            .card-body {
+                padding: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .back-btn,
+            .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .card-header,
+            .card-body {
+                padding: 20px;
+            }
+        }
+    </style>
+{% endblock %}

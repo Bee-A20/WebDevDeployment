@@ -1,0 +1,223 @@
+/* Shared login/register form styles */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    background: linear-gradient(135deg, #662d91 0%, #8b4bc4 100%);
+}
+
+.login-container,
+.register-container {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.login-card,
+.register-card {
+    width: 100%;
+    background-color: #ffffff;
+    padding: 44px 40px;
+    border-radius: 24px;
+    box-shadow: 0 28px 80px rgba(17, 17, 39, 0.14);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    max-width: 560px;
+    position: relative;
+}
+
+.login-content,
+.register-content {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+.login-header,
+.register-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.login-logo-img,
+.register-logo-img {
+    max-width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.login-logo,
+.register-logo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+}
+
+.login-subtitle,
+.register-subtitle {
+    color: #696983;
+    font-size: 13px;
+}
+
+.login-title,
+.register-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    background: #fff;
+    color: var(--text-dark);
+}
+
+.form-control::placeholder {
+    color: #a6a6a6;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 6px 22px rgba(102, 45, 145, 0.08);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid #c9c9d9;
+}
+
+.form-check-label {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.alert {
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    font-size: 14px;
+}
+
+.alert-danger {
+    background-color: #fff3f3;
+    border: 1px solid #ffd6d8;
+    color: #9b2a2a;
+}
+
+.alert-info {
+    background-color: #f3f7ff;
+    border: 1px solid #d8e6ff;
+    color: #1a3a6f;
+}
+
+.alert-info a,
+.login-footer a,
+.register-footer a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.btn-login,
+.register-button {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-login i,
+.register-button i {
+    margin-right: 8px;
+}
+
+.btn-login {
+    background-color: #5c20a8;
+    color: #ffffff;
+    border: 1px solid transparent;
+}
+
+.btn-login:hover,
+.register-button:hover {
+    transform: translateY(-1px);
+}
+
+.btn-google {
+    background: #ffffff;
+    color: #333333;
+    border: 1px solid #dadce0;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.btn-google:hover {
+    background: #f7f7f8;
+}
+
+.login-footer,
+.register-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #6c6c7d;
+}
+
+.login-footer a,
+.register-footer a {
+    color: var(--primary-color);
+}
+
+.login-footer a:hover,
+.register-footer a:hover {
+    text-decoration: underline;
+}
+
+.staff-note {
+    text-align: center;
+    margin: 18px 0;
+    color: #7d5fa2;
+    font-size: 13px;
+}

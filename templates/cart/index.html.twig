@@ -1,0 +1,204 @@
+{% extends 'base.html.twig' %}
+
+{% set hide_topbar = true %}
+
+{% block title %}Shopping Cart - PACUNLA{% endblock %}
+{% block page_title %}Shopping Cart{% endblock %}
+
+{% block stylesheets %}
+        :root {
+            --bg: #f5f2fb;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --muted: #62677a;
+            --border: #dcdce5;
+            --primary: #662d91;
+            --primary-dark: #4a1f6b;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .page-shell {
+            max-width: 1120px;
+            margin: 2rem auto 4rem;
+            padding: 0 1.5rem;
+        }
+
+        .cart-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.04);
+        }
+
+        .cart-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.6rem;
+            margin-bottom: 16px;
+        }
+
+        .cart-list {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 16px;
+        }
+
+        .cart-item {
+            background: #f9f8ff;
+            border-radius: 20px;
+        }
+
+        .cart-item td {
+            padding: 18px 20px;
+            vertical-align: top;
+        }
+
+        .cart-item-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .cart-item-description {
+            color: var(--muted);
+            margin-top: 6px;
+            font-size: 0.95rem;
+        }
+
+        .cart-item-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .cart-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border);
+        }
+
+        .cart-summary .label {
+            color: var(--muted);
+        }
+
+        .cart-summary .amount {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            padding: 48px;
+            text-align: center;
+            border: 1px dashed var(--border);
+            border-radius: 20px;
+            background: #f7f5ff;
+        }
+
+        .empty-state h2 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+            border-radius: 999px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-ghost { background: #fff; color: var(--text); border: 1px solid var(--border); }
+        .btn-danger { background: #ff5e5b; color: #fff; }
+
+        .flash { margin-bottom: 16px; padding: 14px 18px; border-radius: 16px; font-size: 0.95rem; }
+        .flash.success { background: #eef3ff; color: #2e2d70; }
+        .flash.warning { background: #fff4e5; color: #7e5a00; }
+        .flash.danger { background: #ffe8ea; color: #8c1f2b; }
+
+        @media (max-width: 720px) {
+            .cart-item td { display: block; width: 100%; }
+            .cart-item { padding: 16px; }
+        }
+{% endblock %}
+
+{% block body %}
+    <main class="page-shell">
+        <div class="cart-panel">
+            <h1 class="cart-title">Your shopping cart</h1>
+
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="flash {{ label }}">{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+
+            {% if items is empty %}
+                <div class="empty-state">
+                    <h2>Empty cart</h2>
+                    <p>Add your first item from the landing page to begin shopping.</p>
+                    <a href="{{ path('app_shop') }}" class="btn btn-primary">Browse products</a>
+                </div>
+            {% else %}
+                <table class="cart-list">
+                    <tbody>
+                        {% for item in items %}
+                            <tr class="cart-item">
+                                <td>
+                                    <div class="cart-item-name">{{ item.product.name }}</div>
+                                    <div class="cart-item-description">{{ item.product.description ?: 'No description available.' }}</div>
+                                    <div class="cart-item-meta">
+                                        <span>Unit price: ₱{{ item.product.price|number_format(2, '.', ',') }}</span>
+                                        <span>Line total: ₱{{ item.lineTotal|number_format(2, '.', ',') }}</span>
+                                    </div>
+                                    <div class="cart-item-meta">
+                                        <form method="post" action="{{ path('app_cart_update', {'id': item.product.id}) }}" style="display:inline-flex; gap:8px; align-items:center;">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('update-cart-item' ~ item.product.id) }}">
+                                            <label for="cart-quantity-{{ item.product.id }}" style="font-size:0.95rem; color:var(--muted);">Qty</label>
+                                            <input id="cart-quantity-{{ item.product.id }}" type="number" name="quantity" min="1" value="{{ item.quantity }}" inputmode="numeric" pattern="[0-9]*" class="quantity-input" style="width:70px; padding:8px 10px; border:1px solid var(--border); border-radius:12px;" />
+                                            <button type="submit" class="btn btn-ghost">Update</button>
+                                        </form>
+                                    </div>
+                                </td>
+                                <td style="width: auto; white-space: nowrap; display:flex; align-items:center; justify-content:flex-end; padding-left:12px;">
+                                    <form method="post" action="{{ path('app_cart_remove', {'id': item.product.id}) }}">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('remove-from-cart' ~ item.product.id) }}">
+                                        <button type="submit" class="btn btn-danger">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="cart-summary">
+                    <span class="label">Subtotal</span>
+                    <span class="amount">₱{{ subtotal|number_format(2, '.', ',') }}</span>
+                </div>
+                <div style="margin-top:20px; display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+                    <a href="{{ path('app_cart_checkout') }}" class="btn btn-primary">Proceed to checkout</a>
+                    <a href="{{ path('app_shop') }}" class="btn btn-ghost">Continue shopping</a>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}
