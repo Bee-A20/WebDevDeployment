@@ -14,6 +14,11 @@ class UserChecker implements UserCheckerInterface
             // this message will be shown to the user
             throw new CustomUserMessageAccountStatusException('Your account is disabled. Please contact an administrator.');
         }
+
+        if (method_exists($user, 'isVerified') && !$user->isVerified()) {
+            // this message will be shown to the user
+            throw new CustomUserMessageAccountStatusException('Please verify your email address before logging in. Check your inbox for the verification link.');
+        }
     }
 
     public function checkPostAuth(UserInterface $user): void
