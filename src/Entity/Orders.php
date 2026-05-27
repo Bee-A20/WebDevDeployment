@@ -48,6 +48,7 @@ class Orders
 
     public function __construct()
     {
+        $this->createdAt = new \DateTimeImmutable();
         $this->orderItems = new ArrayCollection();
     }
 
