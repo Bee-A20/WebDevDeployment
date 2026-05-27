@@ -558,10 +558,6 @@
             justify-content: center;
         }
 
-        .site-header {
-            position: relative;
-        }
-
         @media (max-width: 960px) {
             .mobile-menu-toggle {
                 display: inline-flex;
@@ -575,7 +571,7 @@
                 background: white;
                 flex-direction: column;
                 gap: 0;
-                align-items: stretch;
+                align-items: center;
                 padding: 1rem 0;
                 display: none;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.08);
@@ -585,6 +581,13 @@
 
             .nav-desktop.open {
                 display: flex;
+            }
+
+            .nav-desktop a:not(.btn),
+            .nav-desktop .btn-login {
+                width: 100%;
+                max-width: 420px;
+                text-align: center;
             }
 
             .nav-desktop a:not(.btn) {
@@ -876,6 +879,7 @@
         {% endif %}
     </div>
 
+    {% if not show_sidebar %}
     <footer class="site-footer">
         <div class="footer-inner">
             <div class="footer-col">
@@ -902,6 +906,7 @@
             </div>
         </div>
     </footer>
+    {% endif %}
 
     <script>
         (function () {
