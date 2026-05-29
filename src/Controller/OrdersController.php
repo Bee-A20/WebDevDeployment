@@ -4,12 +4,14 @@ namespace App\Controller;
 
 use App\Entity\Orders;
 use App\Entity\OrderItem;
+use App\Entity\Products;
 use App\Form\OrdersType;
 use App\Repository\OrdersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -75,44 +77,13 @@ final class OrdersController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get the selected products and quantity from the form (unmapped fields)
-            $selectedProducts = $form->get('products')->getData();
-            $quantity = $form->get('quantity')->getData();
-
-            if (!$quantity || $quantity < 1) {
-                $this->addFlash('danger', 'Quantity must be at least 1.');
+            if ($this->syncOrderLineItems($order, $form, $entityManager, adjustStock: true)) {
                 return $this->render('orders/new.html.twig', [
                     'order' => $order,
                     'form' => $form,
                 ]);
             }
 
-            // Validate stock and create order items
-            foreach ($selectedProducts as $product) {
-                $stock = $product->getStock();
-                if (null !== $stock) {
-                    if ($quantity > $stock) {
-                        $this->addFlash('danger', sprintf('Not enough stock for product "%s". Available: %d.', $product->getName(), $stock));
-
-                        return $this->render('orders/new.html.twig', [
-                            'order' => $order,
-                            'form' => $form,
-                        ]);
-                    }
-
-                    // Reduce stock
-                    $product->setStock($stock - $quantity);
-                }
-
-                // Create OrderItem for this product
-                $orderItem = new OrderItem();
-                $orderItem->setProduct($product);
-                $orderItem->setQuantity($quantity);
-                $orderItem->setOrder($order);
-                $order->addOrderItem($orderItem);
-            }
-
-            // set owner
             $order->setCreatedBy($this->getUser());
 
             $entityManager->persist($order);
@@ -152,12 +123,21 @@ final class OrdersController extends AbstractController
         }
 
         $form = $this->createForm(OrdersType::class, $order);
+        if (!$request->isMethod('POST')) {
+            $this->prefillOrderFormFields($order, $form);
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // permission check: only admin or staff can edit orders
             if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_STAFF')) {
                 throw $this->createAccessDeniedException('You do not have permission to edit this order.');
+            }
+
+            if ($this->syncOrderLineItems($order, $form, $entityManager, adjustStock: false)) {
+                return $this->render('orders/edit.html.twig', [
+                    'order' => $order,
+                    'form' => $form,
+                ]);
             }
 
             $entityManager->flush();
@@ -188,6 +168,99 @@ final class OrdersController extends AbstractController
         }
 
         return $this->redirectToRoute('app_orders_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    private function prefillOrderFormFields(Orders $order, FormInterface $form): void
+    {
+        if (null === $order->getId() || !$form->has('products') || !$form->has('quantity')) {
+            return;
+        }
+
+        $products = [];
+        $quantities = [];
+        foreach ($order->getOrderItems() as $orderItem) {
+            $product = $orderItem->getProduct();
+            if ($product) {
+                $products[$product->getId()] = $product;
+            }
+            if (null !== $orderItem->getQuantity()) {
+                $quantities[] = $orderItem->getQuantity();
+            }
+        }
+
+        if ($products !== []) {
+            $form->get('products')->setData(array_values($products));
+        }
+
+        if ($quantities !== []) {
+            $uniqueQuantities = array_unique($quantities);
+            $form->get('quantity')->setData(
+                1 === count($uniqueQuantities) ? reset($uniqueQuantities) : $quantities[0]
+            );
+        }
+    }
+
+    /**
+     * Rebuilds order line items from the unmapped products + quantity fields.
+     *
+     * @return bool true when validation failed (caller should re-render the form)
+     */
+    private function syncOrderLineItems(
+        Orders $order,
+        FormInterface $form,
+        EntityManagerInterface $entityManager,
+        bool $adjustStock,
+    ): bool {
+        /** @var Products[] $selectedProducts */
+        $selectedProducts = $form->get('products')->getData() ?? [];
+        $quantity = (int) $form->get('quantity')->getData();
+
+        if ($quantity < 1) {
+            $this->addFlash('danger', 'Quantity must be at least 1.');
+
+            return true;
+        }
+
+        if ([] === $selectedProducts) {
+            $this->addFlash('danger', 'Please select at least one product.');
+
+            return true;
+        }
+
+        if ($adjustStock) {
+            foreach ($selectedProducts as $product) {
+                $stock = $product->getStock();
+                if (null !== $stock && $quantity > $stock) {
+                    $this->addFlash(
+                        'danger',
+                        sprintf('Not enough stock for product "%s". Available: %d.', $product->getName(), $stock)
+                    );
+
+                    return true;
+                }
+            }
+        }
+
+        foreach ($order->getOrderItems()->toArray() as $existingItem) {
+            $order->removeOrderItem($existingItem);
+            $entityManager->remove($existingItem);
+        }
+
+        foreach ($selectedProducts as $product) {
+            if ($adjustStock) {
+                $stock = $product->getStock();
+                if (null !== $stock) {
+                    $product->setStock($stock - $quantity);
+                }
+            }
+
+            $orderItem = new OrderItem();
+            $orderItem->setProduct($product);
+            $orderItem->setQuantity($quantity);
+            $order->addOrderItem($orderItem);
+        }
+
+        return false;
     }
 
 }
