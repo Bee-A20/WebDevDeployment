@@ -954,7 +954,7 @@
 
             async function fetchOrdersData() {
                 try {
-                    const response = await fetch('{{ path('orders_list') }}', {
+                    const response = await fetch('{{ path('api_orders_list') }}', {
                         method: 'GET',
                         credentials: 'same-origin',
                         headers: {
