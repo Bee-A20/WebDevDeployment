@@ -618,7 +618,7 @@
 
 {% block body %}
     <div id="ordersPollingStatus" style="margin-bottom: 16px; color: #4a148c; font-size: 14px;">
-        Live order refresh enabled — polling every 5 seconds.
+        Live order refresh enabled — polling every 3 seconds.
     </div>
     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
         <!-- ADMIN/STAFF VIEW: TABLE -->
@@ -955,7 +955,7 @@
             async function fetchOrdersData() {
                 try {
                     const timestamp = Date.now();
-                    const url = '{{ path('api_orders_list') }}?t=' + timestamp;
+                    const url = '{{ path('app_orders_poll') }}?t=' + timestamp;
                     console.log('[Orders Polling] Fetching from:', url);
                     
                     const response = await fetch(url, {
@@ -977,9 +977,16 @@
                         return;
                     }
 
+                    const contentType = response.headers.get('content-type') || '';
                     const text = await response.text();
                     console.log('[Orders Polling] Raw response:', text.substring(0, 200));
-                    
+
+                    if (!contentType.includes('application/json')) {
+                        console.warn('[Orders Polling] Expected JSON but received:', contentType);
+                        updatePollingStatus('Live refresh: session expired — please reload the page');
+                        return;
+                    }
+
                     const data = text ? JSON.parse(text) : [];
                     const orders = getOrdersFromResponse(data).map(normalizeOrder);
                     
@@ -1094,8 +1101,8 @@
             const pollingInterval = setInterval(() => {
                 console.log('[Orders Polling] Interval tick at', new Date().toLocaleTimeString());
                 fetchOrdersData();
-            }, 2000);
-            console.log('[Orders Polling] Polling interval set to 2 seconds');
+            }, 3000);
+            console.log('[Orders Polling] Polling interval set to 3 seconds');
             window.pollingInterval = pollingInterval;
         });
     </script>

@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/orders')]
 final class OrdersController extends AbstractController
@@ -29,6 +30,32 @@ final class OrdersController extends AbstractController
         ]);
 
         // Prevent caching to avoid back button access after logout
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
+    }
+
+    /**
+     * Session-authenticated JSON endpoint for live order polling in the web UI.
+     * (The /api/orders route requires JWT and does not receive browser session cookies.)
+     */
+    #[Route('/poll', name: 'app_orders_poll', methods: ['GET'], priority: 20)]
+    public function poll(OrdersRepository $ordersRepository, SerializerInterface $serializer): Response
+    {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_STAFF')) {
+            $orders = $ordersRepository->findBy([], ['createdAt' => 'DESC']);
+        } else {
+            $orders = $ordersRepository->findBy(
+                ['createdBy' => $this->getUser()],
+                ['createdAt' => 'DESC']
+            );
+        }
+
+        $data = $serializer->serialize($orders, 'json', ['groups' => 'order:read']);
+
+        $response = new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Expires', '0');
@@ -102,7 +129,7 @@ final class OrdersController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_orders_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_orders_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Orders $order): Response
     {
         $user = $this->getUser();
@@ -115,7 +142,7 @@ final class OrdersController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_orders_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_orders_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Orders $order, EntityManagerInterface $entityManager): Response
     {
         // Prevent editing if order is already delivered or cancelled
@@ -145,7 +172,7 @@ final class OrdersController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_orders_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_orders_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Orders $order, EntityManagerInterface $entityManager): Response
     {
         // permission check: admin, staff, or owner can delete
