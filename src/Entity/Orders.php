@@ -12,7 +12,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     normalizationContext: ['groups' => ['order:read']],
-    denormalizationContext: ['groups' => ['order:write']]
+    denormalizationContext: ['groups' => ['order:write']],
+    provider: 'App\State\OrdersStateProvider'
 )]
  
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
@@ -21,9 +22,11 @@ class Orders
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['order:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['order:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 50, options: ["default" => "pending"])]
@@ -39,7 +42,7 @@ class Orders
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['order:read', 'order:write'])]
+    #[Groups(['order:read'])]
     private ?Customer $customer = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
