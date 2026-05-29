@@ -124,7 +124,6 @@ final class OrdersController extends AbstractController
             return $this->redirectToRoute('app_orders_show', ['id' => $order->getId()]);
         }
 
-        $originalStatus = strtolower((string) $order->getStatus());
         $form = $this->createForm(OrdersType::class, $order);
         $form->handleRequest($request);
 
@@ -132,11 +131,6 @@ final class OrdersController extends AbstractController
             // permission check: only admin or staff can edit orders
             if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_STAFF')) {
                 throw $this->createAccessDeniedException('You do not have permission to edit this order.');
-            }
-
-            $newStatus = strtolower((string) $order->getStatus());
-            if ($originalStatus !== 'delivered' && $newStatus === 'delivered') {
-                $this->reduceStockForDeliveredOrder($order);
             }
 
             $entityManager->flush();
@@ -169,21 +163,4 @@ final class OrdersController extends AbstractController
         return $this->redirectToRoute('app_orders_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    private function reduceStockForDeliveredOrder(Orders $order): void
-    {
-        foreach ($order->getOrderItems() as $orderItem) {
-            $product = $orderItem->getProduct();
-            $quantity = $orderItem->getQuantity() ?? 0;
-            if (!$product || $quantity <= 0) {
-                continue;
-            }
-
-            $stock = $product->getStock();
-            if ($stock === null) {
-                continue;
-            }
-
-            $product->setStock(max(0, $stock - $quantity));
-        }
-    }
 }
