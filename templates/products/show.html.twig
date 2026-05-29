@@ -12,9 +12,6 @@
         </div>
 
         <div class="card details-card">
-            <div class="product-image-wrapper">
-                <img src="{{ product.image ? asset(product.image) : asset('shop/' ~ product.name|replace({" ": "_", "'": "", "’": "", "/": "_"}) ~ '.jpg') }}" alt="{{ product.name }}" loading="lazy">
-            </div>
             <div class="card-header">
                 <h2 class="card-title">
                     <i class="fas fa-box"></i> {{ product.name }}
@@ -149,25 +146,6 @@
 
         .card-body {
             padding: 40px;
-        }
-
-        .product-image-wrapper {
-            text-align: center;
-            margin: 0 auto 30px;
-            max-width: 560px;
-            width: 100%;
-            overflow: hidden;
-            border-radius: 18px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(124, 58, 237, 0.12);
-            background: #fff;
-        }
-
-        .product-image-wrapper img {
-            width: 100%;
-            max-height: 420px;
-            object-fit: contain;
-            display: block;
         }
 
         /* Details Grid */
