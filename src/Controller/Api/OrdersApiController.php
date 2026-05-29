@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api', name: 'api_')]
 final class OrdersApiController extends AbstractController
 {
-    #[Route('/orders', name: 'orders_list', methods: ['GET'])]
+    #[Route('/orders', name: 'orders_list', methods: ['GET'], priority: 10)]
     public function listOrders(
         OrdersRepository $ordersRepository,
         SerializerInterface $serializer
@@ -39,7 +39,7 @@ final class OrdersApiController extends AbstractController
         return new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 
-    #[Route('/orders', name: 'orders_create', methods: ['POST'])]
+    #[Route('/orders', name: 'orders_create', methods: ['POST'], priority: 10)]
     public function createOrder(
         Request $request,
         EntityManagerInterface $entityManager,
