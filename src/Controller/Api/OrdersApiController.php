@@ -40,7 +40,12 @@ final class OrdersApiController extends AbstractController
 
         $data = $serializer->serialize($orders, 'json', ['groups' => 'order:read']);
 
-        return new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        $response = new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
     #[Route('/orders', name: 'orders_create', methods: ['POST'], priority: 10)]

@@ -954,11 +954,13 @@
 
             async function fetchOrdersData() {
                 try {
-                    const response = await fetch('{{ path('api_orders_list') }}', {
+                    const response = await fetch('{{ path('api_orders_list') }}?t=' + Date.now(), {
                         method: 'GET',
                         credentials: 'same-origin',
+                        cache: 'no-store',
                         headers: {
                             Accept: 'application/json',
+                            'Cache-Control': 'no-cache',
                         },
                     });
 
