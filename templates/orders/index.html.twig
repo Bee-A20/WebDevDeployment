@@ -617,6 +617,9 @@
 {% endblock %}
 
 {% block body %}
+    <div id="ordersPollingStatus" style="margin-bottom: 16px; color: #4a148c; font-size: 14px;">
+        Live order refresh enabled — polling every 5 seconds.
+    </div>
     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
         <!-- ADMIN/STAFF VIEW: TABLE -->
         <!-- Top Controls: Entries & Search (OUTSIDE WHITE BOX) -->
@@ -799,10 +802,234 @@
     <script src="//cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Only initialize DataTable if we're on admin/staff view
             const ordersTable = $('#ordersTable');
-            if (ordersTable.length > 0) {
-                const table = ordersTable.DataTable({
+            const isAdminPage = ordersTable.length > 0;
+            let table;
+
+            function formatOrderDate(value) {
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    return value || '';
+                }
+                return date.toLocaleString();
+            }
+
+            function normalizeOrder(order) {
+                const orderItems = order.orderItems || [];
+                const products = orderItems
+                    .map(item => item.product?.name || 'Unknown')
+                    .filter(Boolean);
+                const quantity = orderItems
+                    .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+                const total = orderItems
+                    .reduce((sum, item) => sum + (Number(item.product?.price) || 0) * (Number(item.quantity) || 0), 0);
+
+                return {
+                    ...order,
+                    customerName: order.customer?.name || 'N/A',
+                    products,
+                    productsText: products.length ? products.join(', ') : 'No products',
+                    quantity,
+                    total,
+                    status: order.status || 'pending',
+                    formattedStatus: (order.status || 'pending').toLowerCase(),
+                    formattedCreatedAt: formatOrderDate(order.createdAt || order.created_at),
+                };
+            }
+
+            function createOrderRow(order) {
+                const statusClass = order.formattedStatus.replace(/[^a-z0-9]/gi, '').toLowerCase();
+                const statusLabel = order.status.toString().charAt(0).toUpperCase() + order.status.toString().slice(1);
+                const productCell = `<div class="products-cell">${order.productsText}</div>`;
+                const actionButtons = `
+                    <a href="/orders/${order.id}" class="action-link">
+                        <i class="fas fa-eye"></i> Show
+                    </a>
+                    ${!['delivered', 'cancelled'].includes(order.formattedStatus) ? `
+                    <a href="/orders/${order.id}/edit" class="action-link">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>` : ''}
+                `;
+
+                return [
+                    order.id,
+                    order.customerName,
+                    productCell,
+                    order.quantity,
+                    `<span class="badge badge-${statusClass}">${statusLabel}</span>`,
+                    order.formattedCreatedAt,
+                    actionButtons,
+                ];
+            }
+
+            function renderOrderCards(orders) {
+                const container = $('.orders-cards-container');
+                if (!container.length) {
+                    return;
+                }
+
+                if (orders.length === 0) {
+                    container.html(`
+                        <div class="order-card-empty">
+                            <div class="order-card-empty-title">No Orders Yet</div>
+                            <div class="order-card-empty-description">You haven't placed any orders yet. Start shopping now!</div>
+                            <a href="{{ path('app_shop') }}" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart"></i> Shop Now
+                            </a>
+                        </div>
+                    `);
+                    return;
+                }
+
+                const cardsHtml = orders.map(order => {
+                    const productsHtml = order.products.length
+                        ? order.products.map(product => `• ${product}<br>`).join('')
+                        : '<div class="order-card-products-empty">No products</div>';
+                    const productCountLabel = `Products (${order.quantity})`;
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-card-body">
+                                <div class="order-card-section">
+                                    <div class="order-card-section-label">Order #${order.id}</div>
+                                    <div class="order-card-section-value">${order.formattedCreatedAt || 'N/A'}</div>
+                                </div>
+                                <div class="order-card-section">
+                                    <div class="order-card-section-label">Status</div>
+                                    <span class="order-card-status badge badge-${order.formattedStatus}">
+                                        ${order.status.toString().charAt(0).toUpperCase() + order.status.toString().slice(1)}
+                                    </span>
+                                </div>
+                                <div class="order-card-section">
+                                    <div class="order-card-section-label">${productCountLabel}</div>
+                                    <div class="order-card-products">${productsHtml}</div>
+                                </div>
+                                <div class="order-card-section" style="border-top: 1px solid rgba(224, 224, 224, 0.5); padding-top: 12px; margin-top: 8px;">
+                                    <div class="order-card-section-label">Total</div>
+                                    <div class="order-card-section-value" style="font-size: 18px; color: var(--primary-color); font-weight: 700;">
+                                        ₱${order.total.toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="order-card-footer">
+                                <a href="/orders/${order.id}" class="order-card-action">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.html(cardsHtml);
+            }
+
+            function updatePollingStatus(message) {
+                $('#ordersPollingStatus').text(message);
+            }
+
+            function applyDatatableUpdates(orders) {
+                if (!table) {
+                    return;
+                }
+
+                const rows = orders.map(createOrderRow);
+                table.clear();
+                table.rows.add(rows);
+                table.draw(false);
+                updateInfo();
+            }
+
+            function getOrdersFromResponse(data) {
+                const candidates = [
+                    data,
+                    data?.orders,
+                    data?.items,
+                    data?.data,
+                    data?.['hydra:member'],
+                    data?.member,
+                ];
+
+                return candidates.find(Array.isArray) || [];
+            }
+
+            async function fetchOrdersData() {
+                try {
+                    const response = await fetch('{{ path('orders_list') }}', {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            Accept: 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        console.warn('Orders polling fetch failed:', response.status);
+                        updatePollingStatus('Live refresh: unable to fetch latest orders.');
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const orders = getOrdersFromResponse(data).map(normalizeOrder);
+
+                    if (isAdminPage) {
+                        applyDatatableUpdates(orders);
+                    } else {
+                        renderOrderCards(orders);
+                    }
+
+                    updatePollingStatus(`Live order refresh enabled — updated at ${new Date().toLocaleTimeString()}.`);
+                } catch (error) {
+                    console.error('Orders polling error:', error);
+                    updatePollingStatus('Live refresh: network error while fetching orders.');
+                }
+            }
+
+            function renderPageButtons(info) {
+                const pagesContainer = $('#paginationButtons .page-numbers');
+                pagesContainer.empty();
+                const totalPages = info.pages;
+                if (totalPages <= 1) {
+                    return;
+                }
+
+                const maxButtons = 5;
+                let startPage = Math.max(0, info.page - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons);
+
+                if (endPage - startPage < maxButtons) {
+                    startPage = Math.max(0, endPage - maxButtons);
+                }
+
+                for (let pageIndex = startPage; pageIndex < endPage; pageIndex++) {
+                    const pageButton = $('<button>', {
+                        class: 'page-number' + (pageIndex === info.page ? ' active' : ''),
+                        text: pageIndex + 1,
+                        click: function() {
+                            table.page(pageIndex).draw('page');
+                            updateInfo();
+                        }
+                    });
+                    pagesContainer.append(pageButton);
+                }
+            }
+
+            function updateInfo() {
+                if (!table) {
+                    return;
+                }
+
+                const info = table.page.info();
+                const infoText = info.recordsDisplay === 0 
+                    ? 'No orders available'
+                    : `Showing ${info.start + 1} to ${info.end} of ${info.recordsDisplay} orders${info.recordsTotal !== info.recordsDisplay ? ' (filtered from ' + info.recordsTotal + ' total orders)' : ''}`;
+                $('#tableInfo').text(infoText);
+                $('#btnFirst, #btnPrevious').prop('disabled', info.page === 0);
+                $('#btnNext, #btnLast').prop('disabled', info.page === info.pages - 1);
+                renderPageButtons(info);
+            }
+
+            if (isAdminPage) {
+                table = ordersTable.DataTable({
                     "paging": true,
                     "searching": true,
                     "ordering": false,
@@ -815,7 +1042,6 @@
                     }
                 });
 
-                // Connect custom controls to DataTables
                 $('#entriesSelect').on('change', function() {
                     table.page.len(parseInt(this.value)).draw();
                     updateInfo();
@@ -826,7 +1052,6 @@
                     updateInfo();
                 });
 
-                // Pagination buttons
                 $('#btnFirst').on('click', function() {
                     table.page('first').draw('page');
                     updateInfo();
@@ -847,53 +1072,11 @@
                     updateInfo();
                 });
 
-                function renderPageButtons(info) {
-                    const pagesContainer = $('#paginationButtons .page-numbers');
-                    pagesContainer.empty();
-
-                    const totalPages = info.pages;
-                    if (totalPages <= 1) {
-                        return;
-                    }
-
-                    const maxButtons = 5;
-                    let startPage = Math.max(0, info.page - Math.floor(maxButtons / 2));
-                    let endPage = Math.min(totalPages, startPage + maxButtons);
-
-                    if (endPage - startPage < maxButtons) {
-                        startPage = Math.max(0, endPage - maxButtons);
-                    }
-
-                    for (let pageIndex = startPage; pageIndex < endPage; pageIndex++) {
-                        const pageButton = $('<button>', {
-                            class: 'page-number' + (pageIndex === info.page ? ' active' : ''),
-                            text: pageIndex + 1,
-                            click: function() {
-                                table.page(pageIndex).draw('page');
-                                updateInfo();
-                            }
-                        });
-                        pagesContainer.append(pageButton);
-                    }
-                }
-
-                // Update info text
-                function updateInfo() {
-                    const info = table.page.info();
-                    const infoText = info.recordsDisplay === 0 
-                        ? 'No orders available'
-                        : `Showing ${info.start + 1} to ${info.end} of ${info.recordsDisplay} orders${info.recordsTotal !== info.recordsDisplay ? ' (filtered from ' + info.recordsTotal + ' total orders)' : ''}`;
-                    $('#tableInfo').text(infoText);
-
-                    // Update pagination buttons state
-                    $('#btnFirst, #btnPrevious').prop('disabled', info.page === 0);
-                    $('#btnNext, #btnLast').prop('disabled', info.page === info.pages - 1);
-                    renderPageButtons(info);
-                }
-
-                // Initial info update
                 updateInfo();
             }
+
+            fetchOrdersData();
+            setInterval(fetchOrdersData, 5000);
         });
     </script>
 {% endblock %}

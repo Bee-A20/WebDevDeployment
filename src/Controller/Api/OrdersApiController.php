@@ -31,8 +31,12 @@ final class OrdersApiController extends AbstractController
             return new JsonResponse([], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get orders for the authenticated user
-        $orders = $ordersRepository->findBy(['createdBy' => $user]);
+        // Get orders for the authenticated user, or all orders for admin/staff
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_STAFF')) {
+            $orders = $ordersRepository->findAll();
+        } else {
+            $orders = $ordersRepository->findBy(['createdBy' => $user]);
+        }
 
         $data = $serializer->serialize($orders, 'json', ['groups' => 'order:read']);
 
