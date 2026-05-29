@@ -111,6 +111,10 @@ final class OrdersApiController extends AbstractController
                 $order->addOrderItem($orderItem);
             }
 
+            if (strtolower((string) $order->getStatus()) === 'delivered') {
+                $this->reduceStockForDeliveredOrder($order);
+            }
+
             $entityManager->persist($order);
             $entityManager->flush();
 
@@ -122,6 +126,24 @@ final class OrdersApiController extends AbstractController
                 ['message' => 'Error creating order: ' . $e->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
+        }
+    }
+
+    private function reduceStockForDeliveredOrder(Orders $order): void
+    {
+        foreach ($order->getOrderItems() as $orderItem) {
+            $product = $orderItem->getProduct();
+            $quantity = $orderItem->getQuantity() ?? 0;
+            if (!$product || $quantity <= 0) {
+                continue;
+            }
+
+            $stock = $product->getStock();
+            if ($stock === null) {
+                continue;
+            }
+
+            $product->setStock(max(0, $stock - $quantity));
         }
     }
 }
