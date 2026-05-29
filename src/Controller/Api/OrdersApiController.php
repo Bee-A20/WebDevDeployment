@@ -7,7 +7,7 @@ use App\Entity\OrderItem;
 use App\Entity\Customer;
 use App\Entity\Products;
 use App\Repository\OrdersRepository;
-use App\Repository\CustomersRepository;
+use App\Repository\CustomerRepository;
 use App\Repository\ProductsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -43,7 +43,7 @@ final class OrdersApiController extends AbstractController
     public function createOrder(
         Request $request,
         EntityManagerInterface $entityManager,
-        CustomersRepository $customersRepository,
+        CustomerRepository $customersRepository,
         ProductsRepository $productsRepository,
         SerializerInterface $serializer
     ): Response {
