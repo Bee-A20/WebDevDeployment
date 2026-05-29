@@ -223,10 +223,7 @@ final class CartController extends AbstractController
                 return $this->redirectToRoute('app_cart_checkout');
             }
 
-            if ($stock !== null) {
-                $product->setStock($stock - $quantity);
-                $entityManager->persist($product);
-            }
+            // Stock is reduced when the order status becomes "delivered" (see OrderDeliveryStockSubscriber).
 
             // Create OrderItem and add to order
             $orderItem = new OrderItem();

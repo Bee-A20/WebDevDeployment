@@ -7,6 +7,7 @@ use App\Form\ProductsType;
 use App\Repository\ProductsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,6 +23,31 @@ final class ProductsController extends AbstractController
         ]);
 
         // Prevent caching to avoid back button access after logout
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
+    }
+
+    #[Route('/poll', name: 'app_products_poll', methods: ['GET'], priority: 20)]
+    public function poll(ProductsRepository $productsRepository): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_STAFF')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $products = array_map(static function (Products $product): array {
+            return [
+                'id' => $product->getId(),
+                'name' => $product->getName(),
+                'price' => $product->getPrice(),
+                'description' => $product->getDescription(),
+                'stock' => $product->getStock(),
+            ];
+        }, $productsRepository->findAll());
+
+        $response = new JsonResponse(['products' => $products]);
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Expires', '0');
@@ -66,7 +92,7 @@ final class ProductsController extends AbstractController
         return $response;
     }
 
-    #[Route('/{id}', name: 'app_products_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_products_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Products $product): Response
     {
         $response = $this->render('products/show.html.twig', [
@@ -81,7 +107,7 @@ final class ProductsController extends AbstractController
         return $response;
     }
 
-    #[Route('/{id}/edit', name: 'app_products_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_products_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Products $product, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ProductsType::class, $product);
@@ -114,7 +140,7 @@ final class ProductsController extends AbstractController
         return $response;
     }
 
-    #[Route('/{id}', name: 'app_products_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_products_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Products $product, EntityManagerInterface $entityManager): Response
     {
         // permission check: admin, staff, or owner can delete

@@ -165,41 +165,44 @@
     </div>
 
     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+        <div id="dashboardPollingStatus" style="margin-bottom: 16px; color: #662d91; font-size: 14px;">
+            Live dashboard refresh enabled — polling every 3 seconds.
+        </div>
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="stat-icon fas fa-box"></i>
                 <div class="stat-label">Total Products</div>
-                <div class="stat-value">{{ totalProducts }}</div>
+                <div class="stat-value" id="stat-total-products">{{ totalProducts }}</div>
             </div>
             
             <div class="stat-card">
                 <i class="stat-icon fas fa-users"></i>
                 <div class="stat-label">Total Customers</div>
-                <div class="stat-value">{{ totalCustomers }}</div>
+                <div class="stat-value" id="stat-total-customers">{{ totalCustomers }}</div>
             </div>
             
             <div class="stat-card">
                 <i class="stat-icon fas fa-shopping-cart"></i>
                 <div class="stat-label">Total Orders</div>
-                <div class="stat-value">{{ totalOrders }}</div>
+                <div class="stat-value" id="stat-total-orders">{{ totalOrders }}</div>
             </div>
 
             <div class="stat-card">
                 <i class="stat-icon fas fa-boxes"></i>
                 <div class="stat-label">Total Stock Units</div>
-                <div class="stat-value">{{ totalStock }}</div>
+                <div class="stat-value" id="stat-total-stock">{{ totalStock }}</div>
             </div>
 
             <div class="stat-card">
                 <i class="stat-icon fas fa-exclamation-triangle"></i>
                 <div class="stat-label">Low Stock Products</div>
-                <div class="stat-value">{{ lowStockCount }}</div>
+                <div class="stat-value" id="stat-low-stock">{{ lowStockCount }}</div>
             </div>
             
             <div class="stat-card">
                 <i class="stat-icon fas fa-peso-sign"></i>
                 <div class="stat-label">Revenue</div>
-                <div class="stat-value">₱{{ revenue|number_format(2) }}</div>
+                <div class="stat-value" id="stat-revenue">₱{{ revenue|number_format(2) }}</div>
             </div>
         </div>
 
@@ -242,6 +245,62 @@
             if (event.persisted || (window.performance && window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) {
                 window.location.reload(true);
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusEl = document.getElementById('dashboardPollingStatus');
+            if (!statusEl) {
+                return;
+            }
+
+            function formatRevenue(value) {
+                const amount = Number(value) || 0;
+                return '₱' + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function updateDashboardStats(data) {
+                document.getElementById('stat-total-products').textContent = data.totalProducts ?? 0;
+                document.getElementById('stat-total-customers').textContent = data.totalCustomers ?? 0;
+                document.getElementById('stat-total-orders').textContent = data.totalOrders ?? 0;
+                document.getElementById('stat-total-stock').textContent = data.totalStock ?? 0;
+                document.getElementById('stat-low-stock').textContent = data.lowStockCount ?? 0;
+                document.getElementById('stat-revenue').textContent = formatRevenue(data.revenue);
+            }
+
+            async function fetchDashboardStats() {
+                try {
+                    const url = '{{ path('app_dashboard_poll') }}?t=' + Date.now();
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                        headers: {
+                            Accept: 'application/json',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        statusEl.textContent = 'Live refresh: HTTP ' + response.status;
+                        return;
+                    }
+
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        statusEl.textContent = 'Live refresh: session expired — please reload';
+                        return;
+                    }
+
+                    const data = await response.json();
+                    updateDashboardStats(data);
+                    statusEl.textContent = 'Live dashboard • stock ' + (data.totalStock ?? 0) + ' units • ' + new Date().toLocaleTimeString();
+                } catch (error) {
+                    statusEl.textContent = 'Live refresh: error (' + (error?.message || 'unknown') + ')';
+                }
+            }
+
+            fetchDashboardStats();
+            setInterval(fetchDashboardStats, 3000);
         });
     </script>
 {% endblock %}

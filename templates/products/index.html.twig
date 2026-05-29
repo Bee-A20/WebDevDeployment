@@ -383,6 +383,11 @@
 {% endblock %}
 
 {% block body %}
+    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+    <div id="productsPollingStatus" style="margin-bottom: 16px; color: #662d91; font-size: 14px;">
+        Live stock refresh enabled — polling every 3 seconds.
+    </div>
+    {% endif %}
     <!-- Top Controls: Entries & Search (OUTSIDE WHITE BOX) -->
     <div class="custom-table-controls-top">
         <div class="entries-control">
@@ -566,6 +571,72 @@
 
             // Initial info update
             updateInfo();
+
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+            const pollingStatus = document.getElementById('productsPollingStatus');
+
+            function formatPrice(value) {
+                const amount = Number(value) || 0;
+                return '₱' + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function createProductRow(product) {
+                const stockLabel = product.stock === null || product.stock === undefined ? 'N/A' : product.stock;
+                return [
+                    product.id,
+                    product.name,
+                    formatPrice(product.price),
+                    product.description || '',
+                    stockLabel,
+                    `<a href="/products/${product.id}" class="action-link"><i class="fas fa-eye"></i> Show</a>
+                     <a href="/products/${product.id}/edit" class="action-link"><i class="fas fa-edit"></i> Edit</a>`,
+                ];
+            }
+
+            async function fetchProductsData() {
+                if (!pollingStatus) {
+                    return;
+                }
+
+                try {
+                    const url = '{{ path('app_products_poll') }}?t=' + Date.now();
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                        headers: {
+                            Accept: 'application/json',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        pollingStatus.textContent = 'Live refresh: HTTP ' + response.status;
+                        return;
+                    }
+
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        pollingStatus.textContent = 'Live refresh: session expired — please reload';
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const products = Array.isArray(data.products) ? data.products : [];
+                    const rows = products.map(createProductRow);
+                    table.clear();
+                    table.rows.add(rows);
+                    table.draw(false);
+                    updateInfo();
+                    pollingStatus.textContent = 'Live stock refresh • ' + products.length + ' products • ' + new Date().toLocaleTimeString();
+                } catch (error) {
+                    pollingStatus.textContent = 'Live refresh: error (' + (error?.message || 'unknown') + ')';
+                }
+            }
+
+            fetchProductsData();
+            setInterval(fetchProductsData, 3000);
+            {% endif %}
         });
     </script>
 {% endblock %}

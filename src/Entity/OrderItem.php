@@ -70,11 +70,12 @@ class OrderItem
         return $this;
     }
 
+    #[Groups(['order:read'])]
     public function getSubtotal(): float
     {
         $product = $this->getProduct();
         $quantity = $this->getQuantity() ?? 0;
-        
+
         if (!$product) {
             return 0.0;
         }

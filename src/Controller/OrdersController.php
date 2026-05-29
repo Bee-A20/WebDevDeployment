@@ -77,7 +77,8 @@ final class OrdersController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($this->syncOrderLineItems($order, $form, $entityManager, adjustStock: true)) {
+            $adjustStock = 'delivered' === strtolower((string) $order->getStatus());
+            if ($this->syncOrderLineItems($order, $form, $entityManager, adjustStock: $adjustStock)) {
                 return $this->render('orders/new.html.twig', [
                     'order' => $order,
                     'form' => $form,

@@ -67,6 +67,7 @@ class Orders
         return $this;
     }
 
+    #[Groups(['order:read'])]
     public function getTotal(): float
     {
         $total = 0.0;
