@@ -138,6 +138,45 @@ final class OrdersApiController extends AbstractController
         }
     }
 
+    #[Route('/orders/{id}', name: 'orders_delete', methods: ['DELETE'], requirements: ['id' => '\d+'], priority: 20)]
+    public function deleteOrder(
+        int $id,
+        OrdersRepository $ordersRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['message' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $order = $ordersRepository->find($id);
+        if (!$order) {
+            return new JsonResponse(['message' => 'Order not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (
+            !$this->isGranted('ROLE_ADMIN')
+            && !$this->isGranted('ROLE_STAFF')
+            && $order->getCreatedBy()?->getId() !== $user->getId()
+        ) {
+            return new JsonResponse(['message' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+
+        $status = strtolower((string) $order->getStatus());
+        if (in_array($status, ['delivered', 'cancelled'], true)) {
+            return new JsonResponse(
+                ['message' => 'Delivered or cancelled orders cannot be cancelled'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $entityManager->remove($order);
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true], Response::HTTP_OK);
+    }
+
     private function reduceStockForDeliveredOrder(Orders $order): void
     {
         foreach ($order->getOrderItems() as $orderItem) {

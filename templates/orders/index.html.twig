@@ -618,7 +618,7 @@
 
 {% block body %}
     <div id="ordersPollingStatus" style="margin-bottom: 16px; color: #4a148c; font-size: 14px;">
-        Live order refresh enabled — polling every 3 seconds.
+        Live order refresh enabled — polling every 1.5 seconds.
     </div>
     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
         <!-- ADMIN/STAFF VIEW: TABLE -->
@@ -1101,8 +1101,8 @@
             const pollingInterval = setInterval(() => {
                 console.log('[Orders Polling] Interval tick at', new Date().toLocaleTimeString());
                 fetchOrdersData();
-            }, 3000);
-            console.log('[Orders Polling] Polling interval set to 3 seconds');
+            }, 1500);
+            console.log('[Orders Polling] Polling interval set to 1.5 seconds');
             window.pollingInterval = pollingInterval;
         });
     </script>
