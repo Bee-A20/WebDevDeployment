@@ -762,7 +762,7 @@
                             <a href="{{ path('app_orders_show', {'id': order.id}) }}" class="order-card-action">
                                 <i class="fas fa-eye"></i> View Details
                             </a>
-                            {% if order.getCreatedBy() and app.user and order.getCreatedBy().getId() == app.user.getId() %}
+                            {% if order.getCreatedBy() and app.user and order.getCreatedBy().getId() == app.user.getId() and (order.status is not defined or order.status|lower not in ['delivered', 'cancelled']) %}
                                 <form method="post" action="{{ path('app_orders_delete', {'id': order.id}) }}" style="display: flex;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
                                     <input type="hidden" name="_method" value="DELETE">
