@@ -762,11 +762,11 @@
                             <a href="{{ path('app_orders_show', {'id': order.id}) }}" class="order-card-action">
                                 <i class="fas fa-eye"></i> View Details
                             </a>
-                            {% if order.getCreatedBy() and app.user and order.getCreatedBy().getId() == app.user.getId() and (order.status is not defined or order.status|lower not in ['delivered', 'cancelled']) %}
+                            {% if order.status is not defined or order.status|lower not in ['delivered', 'cancelled'] %}
                                 <form method="post" action="{{ path('app_orders_cancel', {'id': order.id}) }}" style="display: flex;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ order.id) }}">
                                     <button type="submit" class="order-card-action" style="border-color: #e74c3c; color: #e74c3c;" onclick="return confirm('Are you sure you want to cancel this order?')">
-                                        <i class="fas fa-times"></i> Cancel
+                                        <i class="fas fa-times"></i> Cancel Order
                                     </button>
                                 </form>
                             {% endif %}
@@ -801,6 +801,38 @@
             const ordersTable = $('#ordersTable');
             const isAdminPage = ordersTable.length > 0;
             let table;
+            let cancelTokens = {};
+            {% if not (is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF')) %}
+            cancelTokens = {
+                {% for order in orders %}
+                "{{ order.id }}": "{{ csrf_token('cancel' ~ order.id) }}"{% if not loop.last %},{% endif %}
+                {% endfor %}
+            };
+            {% endif %}
+
+            function canCancelOrder(order) {
+                return !['delivered', 'cancelled'].includes(order.formattedStatus);
+            }
+
+            function buildCancelOrderAction(order) {
+                if (isAdminPage || !canCancelOrder(order)) {
+                    return '';
+                }
+
+                const token = cancelTokens[String(order.id)] || '';
+                if (!token) {
+                    return '';
+                }
+
+                return `
+                    <form method="post" action="/orders/${order.id}/cancel" style="display: flex;">
+                        <input type="hidden" name="_token" value="${token}">
+                        <button type="submit" class="order-card-action" style="border-color: #e74c3c; color: #e74c3c;" onclick="return confirm('Are you sure you want to cancel this order?')">
+                            <i class="fas fa-times"></i> Cancel Order
+                        </button>
+                    </form>
+                `;
+            }
 
             function formatOrderDate(value) {
                 const date = new Date(value);
@@ -911,6 +943,7 @@
                                 <a href="/orders/${order.id}" class="order-card-action">
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
+                                ${buildCancelOrderAction(order)}
                             </div>
                         </div>
                     `;
@@ -984,6 +1017,9 @@
                     }
 
                     const data = text ? JSON.parse(text) : [];
+                    if (data && data.cancelTokens && typeof data.cancelTokens === 'object') {
+                        cancelTokens = { ...cancelTokens, ...data.cancelTokens };
+                    }
                     const orders = getOrdersFromResponse(data).map(normalizeOrder);
                     
                     console.log('[Orders Polling] Parsed orders count:', orders.length);

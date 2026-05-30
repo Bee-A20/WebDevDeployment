@@ -11,8 +11,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/orders')]
@@ -44,20 +46,45 @@ final class OrdersController extends AbstractController
      * (The /api/orders route requires JWT and does not receive browser session cookies.)
      */
     #[Route('/poll', name: 'app_orders_poll', methods: ['GET'], priority: 20)]
-    public function poll(OrdersRepository $ordersRepository, SerializerInterface $serializer): Response
-    {
+    public function poll(
+        OrdersRepository $ordersRepository,
+        SerializerInterface $serializer,
+        CsrfTokenManagerInterface $csrfTokenManager
+    ): Response {
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_STAFF')) {
             $orders = $ordersRepository->findBy([], ['createdAt' => 'DESC']);
+            $data = $serializer->serialize($orders, 'json', ['groups' => 'order:read']);
+
+            $response = new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
         } else {
             $orders = $ordersRepository->findBy(
                 ['createdBy' => $this->getUser()],
                 ['createdAt' => 'DESC']
             );
+
+            $cancelTokens = [];
+            foreach ($orders as $order) {
+                $orderId = $order->getId();
+                if (null === $orderId) {
+                    continue;
+                }
+
+                $cancelTokens[(string) $orderId] = $csrfTokenManager
+                    ->getToken('cancel'.$orderId)
+                    ->getValue();
+            }
+
+            $payload = [
+                'orders' => json_decode(
+                    $serializer->serialize($orders, 'json', ['groups' => 'order:read']),
+                    true
+                ),
+                'cancelTokens' => $cancelTokens,
+            ];
+
+            $response = new JsonResponse($payload, Response::HTTP_OK);
         }
 
-        $data = $serializer->serialize($orders, 'json', ['groups' => 'order:read']);
-
-        $response = new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Expires', '0');
