@@ -53,9 +53,28 @@ final class OrdersController extends AbstractController
     ): Response {
         if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_STAFF')) {
             $orders = $ordersRepository->findBy([], ['createdAt' => 'DESC']);
-            $data = $serializer->serialize($orders, 'json', ['groups' => 'order:read']);
 
-            $response = new Response($data, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+            $deleteTokens = [];
+            foreach ($orders as $order) {
+                $orderId = $order->getId();
+                if (null === $orderId) {
+                    continue;
+                }
+
+                $deleteTokens[(string) $orderId] = $csrfTokenManager
+                    ->getToken('delete'.$orderId)
+                    ->getValue();
+            }
+
+            $payload = [
+                'orders' => json_decode(
+                    $serializer->serialize($orders, 'json', ['groups' => 'order:read']),
+                    true
+                ),
+                'deleteTokens' => $deleteTokens,
+            ];
+
+            $response = new JsonResponse($payload, Response::HTTP_OK);
         } else {
             $orders = $ordersRepository->findBy(
                 ['createdBy' => $this->getUser()],

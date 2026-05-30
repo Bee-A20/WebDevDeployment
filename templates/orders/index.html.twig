@@ -802,7 +802,14 @@
             const isAdminPage = ordersTable.length > 0;
             let table;
             let cancelTokens = {};
-            {% if not (is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF')) %}
+            let deleteTokens = {};
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
+            deleteTokens = {
+                {% for order in orders %}
+                "{{ order.id }}": "{{ csrf_token('delete' ~ order.id) }}"{% if not loop.last %},{% endif %}
+                {% endfor %}
+            };
+            {% else %}
             cancelTokens = {
                 {% for order in orders %}
                 "{{ order.id }}": "{{ csrf_token('cancel' ~ order.id) }}"{% if not loop.last %},{% endif %}
@@ -812,6 +819,26 @@
 
             function canCancelOrder(order) {
                 return !['delivered', 'cancelled'].includes(order.formattedStatus);
+            }
+
+            function buildDeleteOrderAction(order) {
+                if (!isAdminPage) {
+                    return '';
+                }
+
+                const token = deleteTokens[String(order.id)] || '';
+                if (!token) {
+                    return '';
+                }
+
+                return `
+                    <form method="post" action="/orders/${order.id}" class="delete-form" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                        <input type="hidden" name="_token" value="${token}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                `;
             }
 
             function buildCancelOrderAction(order) {
@@ -877,6 +904,7 @@
                     <a href="/orders/${order.id}/edit" class="action-link">
                         <i class="fas fa-edit"></i> Edit
                     </a>` : ''}
+                    ${buildDeleteOrderAction(order)}
                 `;
 
                 return [
@@ -1019,6 +1047,9 @@
                     const data = text ? JSON.parse(text) : [];
                     if (data && data.cancelTokens && typeof data.cancelTokens === 'object') {
                         cancelTokens = { ...cancelTokens, ...data.cancelTokens };
+                    }
+                    if (data && data.deleteTokens && typeof data.deleteTokens === 'object') {
+                        deleteTokens = { ...deleteTokens, ...data.deleteTokens };
                     }
                     const orders = getOrdersFromResponse(data).map(normalizeOrder);
                     
