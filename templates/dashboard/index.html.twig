@@ -165,9 +165,6 @@
     </div>
 
     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
-        <div id="dashboardPollingStatus" style="margin-bottom: 16px; color: #662d91; font-size: 14px;">
-            Live dashboard refresh enabled — polling every 3 seconds.
-        </div>
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="stat-icon fas fa-box"></i>
@@ -248,8 +245,8 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            const statusEl = document.getElementById('dashboardPollingStatus');
-            if (!statusEl) {
+            const statsRoot = document.getElementById('stat-total-products');
+            if (!statsRoot) {
                 return;
             }
 
@@ -281,21 +278,18 @@
                     });
 
                     if (!response.ok) {
-                        statusEl.textContent = 'Live refresh: HTTP ' + response.status;
                         return;
                     }
 
                     const contentType = response.headers.get('content-type') || '';
                     if (!contentType.includes('application/json')) {
-                        statusEl.textContent = 'Live refresh: session expired — please reload';
                         return;
                     }
 
                     const data = await response.json();
                     updateDashboardStats(data);
-                    statusEl.textContent = 'Live dashboard • stock ' + (data.totalStock ?? 0) + ' units • ' + new Date().toLocaleTimeString();
                 } catch (error) {
-                    statusEl.textContent = 'Live refresh: error (' + (error?.message || 'unknown') + ')';
+                    // Keep polling; stats stay at last successful values.
                 }
             }
 

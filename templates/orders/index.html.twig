@@ -617,9 +617,6 @@
 {% endblock %}
 
 {% block body %}
-    <div id="ordersPollingStatus" style="margin-bottom: 16px; color: #4a148c; font-size: 14px;">
-        Live order refresh enabled — polling every 1.5 seconds.
-    </div>
     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
         <!-- ADMIN/STAFF VIEW: TABLE -->
         <!-- Top Controls: Entries & Search (OUTSIDE WHITE BOX) -->
@@ -922,8 +919,8 @@
                 container.html(cardsHtml);
             }
 
-            function updatePollingStatus(message) {
-                $('#ordersPollingStatus').text(message);
+            function updatePollingStatus(_message) {
+                // Status text hidden; realtime polling still runs below.
             }
 
             function applyDatatableUpdates(orders) {

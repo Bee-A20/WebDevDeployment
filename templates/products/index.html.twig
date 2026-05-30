@@ -383,11 +383,6 @@
 {% endblock %}
 
 {% block body %}
-    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
-    <div id="productsPollingStatus" style="margin-bottom: 16px; color: #662d91; font-size: 14px;">
-        Live stock refresh enabled — polling every 3 seconds.
-    </div>
-    {% endif %}
     <!-- Top Controls: Entries & Search (OUTSIDE WHITE BOX) -->
     <div class="custom-table-controls-top">
         <div class="entries-control">
@@ -573,8 +568,6 @@
             updateInfo();
 
             {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF') %}
-            const pollingStatus = document.getElementById('productsPollingStatus');
-
             function formatPrice(value) {
                 const amount = Number(value) || 0;
                 return '₱' + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -594,7 +587,7 @@
             }
 
             async function fetchProductsData() {
-                if (!pollingStatus) {
+                if (!table) {
                     return;
                 }
 
@@ -611,13 +604,11 @@
                     });
 
                     if (!response.ok) {
-                        pollingStatus.textContent = 'Live refresh: HTTP ' + response.status;
                         return;
                     }
 
                     const contentType = response.headers.get('content-type') || '';
                     if (!contentType.includes('application/json')) {
-                        pollingStatus.textContent = 'Live refresh: session expired — please reload';
                         return;
                     }
 
@@ -628,9 +619,8 @@
                     table.rows.add(rows);
                     table.draw(false);
                     updateInfo();
-                    pollingStatus.textContent = 'Live stock refresh • ' + products.length + ' products • ' + new Date().toLocaleTimeString();
                 } catch (error) {
-                    pollingStatus.textContent = 'Live refresh: error (' + (error?.message || 'unknown') + ')';
+                    // Keep polling; table stays at last successful values.
                 }
             }
 
