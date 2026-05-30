@@ -153,6 +153,34 @@ final class OrdersController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/cancel', name: 'app_orders_cancel', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function cancel(Request $request, Orders $order, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (
+            !$this->isGranted('ROLE_ADMIN')
+            && !$this->isGranted('ROLE_STAFF')
+            && $order->getCreatedBy()?->getId() !== $user->getId()
+        ) {
+            throw $this->createAccessDeniedException('You do not have permission to cancel this order.');
+        }
+
+        $status = strtolower((string) $order->getStatus());
+        if (in_array($status, ['delivered', 'cancelled'], true)) {
+            $this->addFlash('warning', 'Delivered or cancelled orders cannot be cancelled.');
+
+            return $this->redirectToRoute('app_orders_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($this->isCsrfTokenValid('cancel'.$order->getId(), $request->request->get('_token'))) {
+            $order->setStatus('cancelled');
+            $entityManager->flush();
+            $this->addFlash('success', 'Order cancelled successfully.');
+        }
+
+        return $this->redirectToRoute('app_orders_index', [], Response::HTTP_SEE_OTHER);
+    }
+
     #[Route('/{id}', name: 'app_orders_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Orders $order, EntityManagerInterface $entityManager): Response
     {

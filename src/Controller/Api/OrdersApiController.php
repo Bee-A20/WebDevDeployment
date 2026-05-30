@@ -138,11 +138,12 @@ final class OrdersApiController extends AbstractController
         }
     }
 
-    #[Route('/orders/{id}', name: 'orders_delete', methods: ['DELETE'], requirements: ['id' => '\d+'], priority: 20)]
-    public function deleteOrder(
+    #[Route('/orders/{id}/cancel', name: 'orders_cancel', methods: ['PATCH'], requirements: ['id' => '\d+'], priority: 20)]
+    public function cancelOrder(
         int $id,
         OrdersRepository $ordersRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer
     ): Response {
         $user = $this->getUser();
 
@@ -171,10 +172,12 @@ final class OrdersApiController extends AbstractController
             );
         }
 
-        $entityManager->remove($order);
+        $order->setStatus('cancelled');
         $entityManager->flush();
 
-        return new JsonResponse(['success' => true], Response::HTTP_OK);
+        $jsonData = $serializer->serialize($order, 'json', ['groups' => 'order:read']);
+
+        return new Response($jsonData, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 
     private function reduceStockForDeliveredOrder(Orders $order): void

@@ -123,7 +123,7 @@
 
                     {{ include('orders/_delete_form.html.twig', {'button_label': 'Delete'}) }}
                 {% elseif order.getCreatedBy() and app.user and order.getCreatedBy().getId() == app.user.getId() and (order.status is not defined or order.status|lower not in ['delivered', 'cancelled']) %}
-                    {{ include('orders/_delete_form.html.twig', {'button_label': 'Cancel Order'}) }}
+                    {{ include('orders/_cancel_form.html.twig', {'button_label': 'Cancel Order'}) }}
                 {% endif %}
             </div>
         </div>
